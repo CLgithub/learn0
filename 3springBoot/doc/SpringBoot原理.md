@@ -2,7 +2,17 @@
 
 
 
-## @SpringBootApplication源码解析
+以Spring-boot 2.3.4.RELEASE为例，对应的spring版本是5.2.9RELEASE，在pom中引入web启动器
+
+```xml
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-web</artifactId>
+	<version>2.3.4.RELEASE</version>
+</dependency>
+```
+
+## @SpringBootApplication
 
 1. @SpringBootConfiguration
 
