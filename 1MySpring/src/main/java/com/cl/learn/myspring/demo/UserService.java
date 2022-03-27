@@ -5,22 +5,22 @@ import com.cl.learn.myspring.spring.InitializingBean;
 import com.cl.learn.myspring.spring.Scope;
 import com.cl.learn.myspring.spring.annotation.Autowird;
 import com.cl.learn.myspring.spring.annotation.Component;
-import com.cl.learn.myspring.spring.annotation.ComponentScan;
 import com.cl.learn.myspring.spring.annotation.Scan;
 
 /**
- * @Author l
- * @Date 2022/3/26 11:47
+ * 要实现AOP
+ * 就要生成bean的代理对象，bean的原类型就必须要实现接口
+ * UserService必须实现接口，
  */
 @Component
-@Scan(Scope.prototype)
-public class UserService implements BeanNameAware, InitializingBean {
+public class UserService implements UserServiceInterface, BeanNameAware, InitializingBean{
 
     @Autowird
     private OrderService orderService;
 
     private String beanName;
 
+    @Override
     public void test(){
         System.out.println(orderService);
     }
@@ -30,13 +30,13 @@ public class UserService implements BeanNameAware, InitializingBean {
         this.beanName=beanName;
     }
 
-    @Override
-    public String toString() {
-        return "UserService{" +
-                "orderService=" + orderService +
-                ", beanName='" + beanName + '\'' +
-                '}';
-    }
+//    @Override
+//    public String toString() {
+//        return "UserService{" +
+//                "orderService=" + orderService +
+//                ", beanName='" + beanName + '\'' +
+//                '}';
+//    }
 
     @Override
     public void afterPropertiesSet() {

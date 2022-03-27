@@ -10,6 +10,8 @@ import java.beans.Introspector;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -18,8 +20,12 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MySpringApplicationContext {
     private Class configClass;
-    private ConcurrentHashMap<String,BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>(); //
-    private ConcurrentHashMap<String,Object> singletonObjects = new ConcurrentHashMap<>();   // 单例池
+    // beanDefintionMap池
+    private ConcurrentHashMap<String,BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>();
+    // 单例池
+    private ConcurrentHashMap<String,Object> singletonObjects = new ConcurrentHashMap<>();
+    // bean后置处理器池
+    private List<BeanPostProcessor> beanPostProcessorList = new ArrayList<>();
 
 
     public MySpringApplicationContext(Class configClass) {
@@ -44,6 +50,11 @@ public class MySpringApplicationContext {
                         Class<?> class1 = classLoader.loadClass(className);
                         if(class1.isAnnotationPresent(Component.class)){ // 如果一个类上有Component注解
 
+                            // 判断如果是BeanPostProcessor
+                            if(BeanPostProcessor.class.isAssignableFrom(class1)){   // 如果class1是BeanPostProcessor.class的派生类
+                                beanPostProcessorList.add((BeanPostProcessor) class1.newInstance());
+                            }
+
                             Component component = class1.getAnnotation(Component.class);
                             String beanName= component.value();
                             if("".equals(beanName)){
@@ -62,6 +73,10 @@ public class MySpringApplicationContext {
                             beanDefinitionMap.put(beanName, beanDefinition);
                         }
                     } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (InstantiationException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
                         e.printStackTrace();
                     }
                 }
@@ -91,16 +106,25 @@ public class MySpringApplicationContext {
             for (Field field: declaredFields) {
                 if(field.isAnnotationPresent(Autowird.class)){   // 如果属性有Autowird 注解
                     field.setAccessible(true);
-                    field.set(bean,getBean(field.getName()));
+                    field.set(bean, getBean(field.getName()));
                 }
             }
             // 3 回掉Aware接口
             if(bean instanceof BeanNameAware){
                 ((BeanNameAware) bean).setBeanName(beanName);
             }
+            // bean后置处理器 处理
+            for (BeanPostProcessor beanPostProcessor : beanPostProcessorList) {
+                bean = beanPostProcessor.postProcessBeforeInitialization(beanName, bean);
+            }
+
             // 4 初始化
             if(bean instanceof InitializingBean){
                 ((InitializingBean) bean).afterPropertiesSet();
+            }
+            // bean后置处理器 处理
+            for (BeanPostProcessor beanPostProcessor : beanPostProcessorList) {
+                bean = beanPostProcessor.postProcessAfterInitialization(beanName, bean);
             }
             // 5 初始化后 BeanPostProcessor bean后置处理器
 
