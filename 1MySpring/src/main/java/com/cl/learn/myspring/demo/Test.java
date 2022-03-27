@@ -10,6 +10,8 @@ public class Test {
     public static void main(String[] args) {
         MySpringApplicationContext mySpringApplicationContext=new MySpringApplicationContext(AppConfig.class);
         UserService userService = (UserService) mySpringApplicationContext.getBean("userService");
+        System.out.println(userService);
         userService.test();
+
     }
 }

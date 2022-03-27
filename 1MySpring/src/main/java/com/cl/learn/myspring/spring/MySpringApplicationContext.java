@@ -59,8 +59,6 @@ public class MySpringApplicationContext {
                                beanDefinition.setScope(Scope.singleton);    // 默认单例子
                             else
                                 beanDefinition.setScope(scan.value());
-
-                            String simpleName = class1.getSimpleName();
                             beanDefinitionMap.put(beanName, beanDefinition);
                         }
                     } catch (ClassNotFoundException e) {
@@ -86,9 +84,9 @@ public class MySpringApplicationContext {
         Class clazz = beanDefinition.getType();
         try {
             // Object o = clazz.newInstance();
-            // 实例化bean
+            // 1 实例化bean
             Object bean = clazz.getConstructor().newInstance(); // 得到无参构造方法，并创建对象
-            // 对bean进行依赖注入
+            // 2 对bean进行依赖注入
             Field[] declaredFields = clazz.getDeclaredFields();
             for (Field field: declaredFields) {
                 if(field.isAnnotationPresent(Autowird.class)){   // 如果属性有Autowird 注解
@@ -96,6 +94,18 @@ public class MySpringApplicationContext {
                     field.set(bean,getBean(field.getName()));
                 }
             }
+            // 3 回掉Aware接口
+            if(bean instanceof BeanNameAware){
+                ((BeanNameAware) bean).setBeanName(beanName);
+            }
+            // 4 初始化
+            if(bean instanceof InitializingBean){
+                ((InitializingBean) bean).afterPropertiesSet();
+            }
+            // 5 初始化后 BeanPostProcessor bean后置处理器
+
+            // 6 AOP
+
             return bean;
         } catch (InstantiationException e) {
             e.printStackTrace();
