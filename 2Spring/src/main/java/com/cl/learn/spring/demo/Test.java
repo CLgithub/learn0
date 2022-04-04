@@ -59,6 +59,29 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
         }
     }
 
+ spring事务原理
+    同样得到的是代理对象
+     class UserServiceProxy extends UserService{
+
+         UserService target;
+
+         // 代理类中会重写父类方法
+         public void test(){
+
+            // sping事务切面逻辑
+
+            // @Transactional
+
+            // 开启事务
+            // 1.事务管理器新建一个数据库连接conn1
+            // 2.conn1.autocommit = false
+
+            // target.test();   // 普通对象.test() 利用conn1来执行sql
+
+            // 方法执行完 若无异常 conn1.commit() 若有异常 conn1.rollback()
+         }
+     }
+
 
 
 
@@ -72,7 +95,7 @@ public class Test {
         UserService userService2 = (UserService) annotationConfigApplicationContext.getBean("userService");
         System.out.println(userService);
         System.out.println(userService2);
-        userService.test();
+        userService.test2();
 //        OrderService orderService= (OrderService) annotationConfigApplicationContext.getBean("orderService");
 //        orderService.test();
 
