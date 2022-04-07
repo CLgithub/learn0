@@ -54,7 +54,7 @@ public class Appconfig {
     public DataSource dataSource() {
         DriverManagerDataSource dataSource=new DriverManagerDataSource();
         dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://localhost:3306/spring0?characterEncoding=UTF-8");
+        dataSource.setUrl("jdbc:mysql://192.168.3.215:3306/spring0?characterEncoding=UTF-8");
 //        dataSource.setUrl("jdbc:mysql://homeUbuntu:3306/spring0");
         dataSource.setUsername("root");
         dataSource.setPassword("123456");

@@ -73,16 +73,22 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
             // @Transactional
 
             // 开启事务
-            // 1.事务管理器新建一个数据库连接conn1
+            // 1.事务管理器新建一个数据库连接conn1 并存放在 ThreadLocal<Map<DataSource,Connection>> 中
             // 2.conn1.autocommit = false
 
-            // target.test();   // 普通对象.test() 利用conn1来执行sql
+            // target.test();   // 普通对象.test() 在ThreadLocal中去找conn1，利用conn1来执行sql
 
             // 方法执行完 若无异常 conn1.commit() 若有异常 conn1.rollback()
          }
      }
 
+ ThreadLocal<Map<DataSource,Connection>> 当不加@Configuration注解时，DataSource就是多例的，
+    事务管理器 和 jdbcTemplate 得到的数据源就非同一个对象，jdbcTemplate要执行sql，在 ThreadLocal 中利用DataSource去查找conn1时就找不到
+    就会自己去创建Connection，此连接执行后就立马提交，所以抛异常也没有回滚
 
+
+ @Configuration AOP @Lazy
+ 都是基于动态代理
 
 
 
