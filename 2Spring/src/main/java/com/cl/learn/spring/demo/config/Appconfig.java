@@ -9,6 +9,7 @@ import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -23,17 +24,18 @@ import java.sql.Connection;
 @EnableAspectJAutoProxy // 开启切面
 @EnableTransactionManagement    // 开启事务管理
 @Configuration
+@EnableAsync
 public class Appconfig {
 
-    @Bean
-    public OrderService orderService1(){
-        return new OrderService();
-    }
+//    @Bean
+//    public OrderService orderService1(){
+//        return new OrderService();
+//    }
 
-    @Bean
-    public OrderService orderService2(){
-        return new OrderService();
-    }
+//    @Bean
+//    public OrderService orderService2(){
+//        return new OrderService();
+//    }
 
     // 为数据源提供jdbctemplate
     @Bean

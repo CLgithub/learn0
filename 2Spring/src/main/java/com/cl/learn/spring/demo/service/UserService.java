@@ -5,7 +5,9 @@ import org.springframework.aop.framework.AopContext;
 import org.springframework.aop.framework.AopProxy;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,7 @@ public class UserService implements InitializingBean {
     @Autowired
     private UserService userService;
 
+    @Lazy   // 在注入OrderService 时，懒加载，创建一个代理对象，并非真正的去创建，
     @Autowired //可以在构造方法中去获取
     private OrderService orderService1;
 
@@ -33,9 +36,9 @@ public class UserService implements InitializingBean {
     }
 
 //    @Autowired
-    public UserService(OrderService orderService12) {
+    public UserService(OrderService orderService) {
         System.out.println(1);
-        this.orderService1 = orderService12;
+        this.orderService1 = orderService;
     }
 
     public UserService(OrderService orderService, OrderService orderService2) {
@@ -57,6 +60,7 @@ public class UserService implements InitializingBean {
         // mysql-->管理员信息--->User对象--->admin
     }
 
+//    @Async
     public void test(){
         System.out.println(orderService1);
     }
@@ -65,7 +69,7 @@ public class UserService implements InitializingBean {
     public void test2(){
         jdbcTemplate.execute("INSERT into t1 values(1,1,1,1,'1')");
 //        throw new NullPointerException();
-        userService.b();
+//        userService.b();
     }
 
     // 按理说NEVER 执行b方法会抛异常，但却没有，这是因为执行b方法是被target对象调用的，所以事务失效，而执行test2()时，是代理对象调用
