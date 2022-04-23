@@ -16,7 +16,7 @@
 
 8. Mysql并发支撑底层BufferPool机制详解
 
-9. 阿里巴巴Mysql索引优化军规
+9.  阿里巴巴Mysql索引优化军规
 
    
 
@@ -79,39 +79,40 @@ MySQL索引采用 B+树结构，有以下特点
 
 <img src="./images/5.png">
          
+
 ```mysql
-     show global status like 'innodb_page_size'; # innoDB页大小
-     # 16384=1024*16
-     # 每个大节点大小为16k Byte
-     # mysql中int和java中int占位一样（32位4字节），bigint相当于java中的long（64位8字节）
-     # 若用bigint类型的字段做索引 每个跟节点可防止16384/(8+6)=1170.2857142857个索引 
-     # 若树高为h，每个叶子节点放索引和数据需要1kB，
-     # 则共能放 16*(1170)^(h-1)，若h=3，=21902400
-     
-     create table t1(
-     a int primary key,
-     b int,
-     c int,
-     d int,
-     e varchar(20)
-     )engine=InnoDB
-     
-     # 显示t1表的索引
-     show index from t1; # 目前有一个索引
-     
-     # 乱序逐行插入数据
-     INSERT into t1 values(4,3,1,1,'d');
-     INSERT into t1 values(1,1,1,1,'a');
-     INSERT into t1 values(8,8,8,8,'h');
-     INSERT into t1 values(2,2,2,2,'b');
-     INSERT into t1 values(5,2,3,5,'e');
-     INSERT into t1 values(3,3,2,2,'c');
-     INSERT into t1 values(7,4,5,5,'g');
-     INSERT into t1 values(6,6,4,4,'f');
-     
-     select * from t1; # 插入的时候就已经排序
-     
-     select * from t1 where a=7; # 不加索引需要7次磁盘io，加了B+树索引，只需要1次磁盘io，因为innoDB_page_size为16kB，直接就在根大节点内
+show global status like 'innodb_page_size'; # innoDB页大小
+# 16384=1024*16
+# 每个大节点大小为16k Byte
+# mysql中int和java中int占位一样（32位4字节），bigint相当于java中的long（64位8字节）
+# 若用bigint类型的字段做索引 每个跟节点可防止16384/(8+6)=1170.2857142857个索引 
+# 若树高为h，每个叶子节点放索引和数据需要1kB，
+# 则共能放 16*(1170)^(h-1)，若h=3，=21902400
+
+create table t1(
+	a int primary key,
+  b int,
+  c int,
+  d int,
+  e varchar(20)
+)engine=InnoDB
+
+# 显示t1表的索引
+show index from t1; # 目前有一个索引
+
+# 乱序逐行插入数据
+INSERT into t1 values(4,3,1,1,'d');
+INSERT into t1 values(1,1,1,1,'a');
+INSERT into t1 values(8,8,8,8,'h');
+INSERT into t1 values(2,2,2,2,'b');
+INSERT into t1 values(5,2,3,5,'e');
+INSERT into t1 values(3,3,2,2,'c');
+INSERT into t1 values(7,4,5,5,'g');
+INSERT into t1 values(6,6,4,4,'f');
+
+select * from t1; # 插入的时候就已经排序
+
+select * from t1 where a=7; # 不加索引需要7次磁盘io，加了B+树索引，只需要1次磁盘io，因为innoDB_page_size为16kB，直接就在根大节点内
 ```
 
 
@@ -133,12 +134,23 @@ InnoDBpage
 
 Explain关键字：使用explain关键字可以模拟优化器执行sql语句，分析你的查询语句或是结构的性能评价。在select语句之前添加explain关键字，Mysql会在查询上设置一个标记，执行查询会返回执行计划的信息，而不是执行这条sql，注意：如果from中包含子查询，仍会执行孩子查询，将结果放入临时表中
 
+* type
+  * ALL：不走索引，全表扫描
+  * index：扫描索引树
+  * range：走索引，范围查找
+  * ref：走回表
+  * eq_ref:
+  * const、system：将主键置于where条件，并能转换为一个常量
+  * NULL：
+
+
+
 * 走索引：从根页往下查找
 * 不走索引：全表扫描，从叶子节点最左侧逐个查找
   
 ```mysql
-explain select * from t1 where a=5; # 走索引 
-explain select * from t1 where a>7; # 走索引
+explain select * from t1 where a=5; # 走索引 const PRIMARY
+explain select * from t1 where a>7; # 走索引 range PRIMARY
 explain select * from t1 where c=7; # 不走索引，全表扫描
 ```
 
@@ -161,7 +173,7 @@ create index idx_t1_bcd on t1(b,c,d);	# B+
 <img src="./images/14.png">
 
 ```mysql
-select * from t1 where b=1 and c=1 and c=1; # 走索引 但是只能查出bcd字段，*字段不能查出
+explain select * from t1 where b=1 and c=1 and d=1; # 走索引 但是只能查出bcd字段，*字段不能查出 ref idx_t1_bcd
 ```
 
 所有在叶子节点上再记录这一行的主键
@@ -177,22 +189,22 @@ select * from t1 where b=1 and c=1 and c=1; # 走索引 但是只能查出bcd字
 存储方式按字段逐个比较
 
 ```mysql
-explain select * from t1 where b=1; # 走索引，相当于用1** 去bcd索引树中查找
-explain select * from t1 where b>1; # 不走bcd索引，走全表扫描，因为走全表扫描更快（走索引只能定位1**，后面的需要7次回表，不如全表扫描）
-explain select * from t1 where b>6; # 走索引（只需要一次回表）
-explain select b from t1 where b>1; # 走索引（直接得出）
-explain select b,c,d from t1 where b>1; # 走索引（直接得出）
-explain select b,c,d,a from t1 where b>1; # 走索引（a是主键，也可以直接得出）
+explain select * from t1 where b=1; # 走索引 ref idx_t1_bcd 先索引再回表，相当于用1** 去bcd索引树中查找
+explain select * from t1 where b>1; # 不走bcd索引，走全表扫描，因为走全表扫描更快（走索引只能定位1**，后面的需要7次回表，不如全表扫描）仅限于5.7版本，mysql8走了索引
+explain select * from t1 where b>6; # 走索引 range idx_t1_bcd（只需要一次回表）
+explain select b from t1 where b>1; # 走索引 range idx_t1_bcd（直接得出）
+explain select b,c,d from t1 where b>1; # 走索引（直接得出） range idx_t1_bcd
+explain select b,c,d,a from t1 where b>1; # 走索引（a是主键，也可以直接得出） range idx_t1_bcd
 
-explain select b from t1;	# 我认为不走，因为不限条件，所以直接全表扫描
+explain select b from t1;	# 走索引 index idx_t1_bcd
 
 # 若加上
 create index idx_t1_e on t1(e);
 
-explain select * from t1 where e=1; 	# 走索引
-explain select * from t1 where e='1'; #
-explain select * from t1 where a=1; 	# 走索引
-explain select * from t1 where a='1';	# 
+explain select * from t1 where e=1; 	# ALL
+explain select * from t1 where e='1'; # ref idx_t1_e
+explain select * from t1 where a=1; 	# const PRIMARY
+explain select * from t1 where a='1';	# const PRIMARY
 ```
 
 联合索引优化原则：最左前缀原则
@@ -237,4 +249,48 @@ Mysql索引还可以是hash索引
 * hash冲突问题
 
 <img src="./images/8.png">
+
+
+
+
+
+# Buffer Pool
+
+<img src="./images/18.png">
+
+<img src="./images/17.png">
+
+
+
+Bufferpool默认128M，每页大小16k，所以共8000个
+
+* free链表：指向Bufferpool中的空页，新从磁盘获取某页时，在此链表中查找空页位置
+* flash链表：指向Bufferpool中的脏页，脏页内存中修改了数据，需要同步到磁盘的页，如何同步
+  * 有一个线程定时去执行，1s/10s执行一次，但并不可靠，假设还等不到线程，mysql就挂了，修改的数据就会丢失
+  * 通过redolog（其实就是事务的过程）
+    * 1、修改bufferpool的数据--->脏页
+    * 2、Update语句--->生成一个redolog--->存在log Buffer中
+    * 3、redolog持久化（何时进行持久化：事务commint时）
+    * 4、返回修改成功
+    * 5、数据库挂掉，
+    * 6、重启mysql，会从redo进行数据恢复
+    * 7、select获取数据时，
+* lru链表：bufferpool有限，需要淘汰机制，按最近使用最少淘汰，没使用某一页，就会把某页的控制块移动到链表最前端，淘汰最末端
+  * 但若有全表扫描：```select * from t1;```切表数据特别大时，回逐个逐个淘汰掉热数据，造成换血现象，热数据又得再次进行加载，为了避免这种换血现象，将链表分为5/8的热区域(5000个)，3/8的冷区域，当一个新页从磁盘加载时，会先进入冷区域的头节点，当该页第二次被访问时，如果访问时间间隔第一次访问>1s，就将其移动到热区域头节点，否则继续呆着冷区域（全表扫描逐行访问数据，每页有多行数据，第二次访问的时间肯定<1s），来避免对热区域的换血
+
+
+
+## redolog
+
+redolog默认有两个文件，每个48M，大小个数可设置，当一个满时，会触发「检查点」，检查已经持久化到磁盘的update sql，清理掉这条log，经常触发检查点会影响性能
+
+redolog持久化：生成一个redolog--->存在log Buffer--->操作系统缓存--->存入磁盘
+
+innodb_flush_log_at_trx_commit配置项
+
+| 值   | 描述                                                         |
+| :--- | ------------------------------------------------------------ |
+| 0    | 表示事务提交时，不立即对redolog进行持久化，这个任务交给后台线程去做（1s/10s去做一次） |
+| 1    | 表示事务提交时，立即吧redolog进行持久化                      |
+| 2    | 表示事务提交时，立即将redo log写到操作系统的缓冲区，并不会直接将redolog进行持久化，这种情况下，如果数据库挂了，但是操作系统没挂，那么事务的持久性还是可以保证的 |
 
