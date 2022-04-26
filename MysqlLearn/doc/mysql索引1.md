@@ -132,19 +132,6 @@ InnoDBpage
 <img src="./images/12.png">
        
 
-Explain关键字：使用explain关键字可以模拟优化器执行sql语句，分析你的查询语句或是结构的性能评价。在select语句之前添加explain关键字，Mysql会在查询上设置一个标记，执行查询会返回执行计划的信息，而不是执行这条sql，注意：如果from中包含子查询，仍会执行孩子查询，将结果放入临时表中
-
-* type
-  * ALL：不走索引，全表扫描
-  * index：扫描索引树
-  * range：走索引，范围查找
-  * ref：走回表
-  * eq_ref:
-  * const、system：将主键置于where条件，并能转换为一个常量
-  * NULL：
-
-
-
 * 走索引：从根页往下查找
 * 不走索引：全表扫描，从叶子节点最左侧逐个查找
   
@@ -254,6 +241,8 @@ Mysql索引还可以是hash索引
 
 
 
+## 事务
+
 # Buffer Pool
 
 <img src="./images/18.png">
@@ -270,7 +259,7 @@ Bufferpool默认128M，每页大小16k，所以共8000个
   * 通过redolog（其实就是事务的过程）
     * 1、修改bufferpool的数据--->脏页
     * 2、Update语句--->生成一个redolog--->存在log Buffer中
-    * 3、redolog持久化（何时进行持久化：事务commint时）
+    * 3、redolog持久化（何时进行持久化：事务commint时，此时binlog也要持久化）
     * 4、返回修改成功
     * 5、数据库挂掉，
     * 6、重启mysql，会从redo进行数据恢复
@@ -278,9 +267,22 @@ Bufferpool默认128M，每页大小16k，所以共8000个
 * lru链表：bufferpool有限，需要淘汰机制，按最近使用最少淘汰，没使用某一页，就会把某页的控制块移动到链表最前端，淘汰最末端
   * 但若有全表扫描：```select * from t1;```切表数据特别大时，回逐个逐个淘汰掉热数据，造成换血现象，热数据又得再次进行加载，为了避免这种换血现象，将链表分为5/8的热区域(5000个)，3/8的冷区域，当一个新页从磁盘加载时，会先进入冷区域的头节点，当该页第二次被访问时，如果访问时间间隔第一次访问>1s，就将其移动到热区域头节点，否则继续呆着冷区域（全表扫描逐行访问数据，每页有多行数据，第二次访问的时间肯定<1s），来避免对热区域的换血
 
+事务执行过程
+
+1. 修改bufferpool的数据--->脏页
+2. Update语句--->生成一个redolog--->存在log Buffer中
+3. redolog持久化（何时进行持久化：事务commint时）
+4. binlog持久化
+5. undolog （进行反向操作，事务rollback时执行 ）
+6. 返回修改成功
 
 
-## redolog
+
+### redolog
+
+redolog时innodb中的概念
+
+记录的是：对于某一页而言，哪个位置的数据进行了修改
 
 redolog默认有两个文件，每个48M，大小个数可设置，当一个满时，会触发「检查点」，检查已经持久化到磁盘的update sql，清理掉这条log，经常触发检查点会影响性能
 
@@ -293,4 +295,62 @@ innodb_flush_log_at_trx_commit配置项
 | 0    | 表示事务提交时，不立即对redolog进行持久化，这个任务交给后台线程去做（1s/10s去做一次） |
 | 1    | 表示事务提交时，立即吧redolog进行持久化                      |
 | 2    | 表示事务提交时，立即将redo log写到操作系统的缓冲区，并不会直接将redolog进行持久化，这种情况下，如果数据库挂了，但是操作系统没挂，那么事务的持久性还是可以保证的 |
+
+
+
+### binlog
+
+	* mysql中的一个概念
+	* 记录一些sql
+	* 主要用在主从数据库
+
+
+
+### undolog
+
+* 可以理解为反向操作的日志
+
+
+
+## 执行计划
+
+执行计划就是sql的执行查询的顺序，以及如何使用索引查询，返回的结果集的行数
+
+Explain关键字：使用explain关键字可以模拟优化器执行sql语句，分析你的查询语句或是结构的性能评价。在select语句之前添加explain关键字，Mysql会在查询上设置一个标记，执行查询会返回执行计划的信息，而不是执行这条sql，注意：如果from中包含子查询，仍会执行孩子查询，将结果放入临时表中
+
+```mysql
+explain select * from t1 where a=1 and b=1
+```
+
+1. id：是一个有顺序的编号，是查询的顺序号，有几个select就显示几行，id的顺序是按select出现的顺序增长的。id列的值越大执行优先级越高越先执行，id列的值相同则从上往下执行，id列的值为NULL最后执行
+2. select_type：表示查询中每个select子句的类型
+   * simple（简单）：查询不包含union查询或子查询
+   * primary（主要）：此查询是最外层的查询（包含子查询）
+   * subquery：子查询中的第一个select
+   * union：此查询是union的第二或随后的查询
+   * dependent union：union中的第二个活后面的查询语句，取决于外面的查询
+   * union result，union的结果
+   * dependent subquery：子查询汇总的第一个select，取决于外面的查询，即子查询依赖于外层查询的结果
+   * derived：衍生，表示到处表的sleect（from子句的子查询）
+3. table：该语句查询的表
+4. partitions：
+5. **type**：执行效率：ALL < index < range < ref < eq_ref < const < system，最好避开ALL和index
+   1. system：表中只有一行记录
+   2. const：将主键置于where条件，并能转换为一个常量
+   3. eq_ref：唯一性索引扫描，对每个索引键，表中只有一条记录与之匹配，走回表
+   4. ref：非唯一性索引扫描，返回匹配某个值的所有数据，走回表（先在非聚合索引查询，再到主键索引中去查询）
+   5. range：范围查找，一般出现在between、<、>
+   6. index：扫描所有索引树
+   7. ALL：全表扫描
+6. possible_keys
+7. key
+8. Key_len
+9. ref
+10. rows：读取多少行
+11. filered
+12. Extra：排序的时候是否有走索引
+    1. using filesort
+    2. using index
+    3. using tempoary
+    4. using where
 
