@@ -4,7 +4,7 @@
 
 
 
-### Redis键(key)常用操作
+## Redis键(key)常用操作
 
 ```
 keys *		# 查看所有key
@@ -21,7 +21,7 @@ flushdb					# 清空当前库
 flushall				# 通杀全部库
 ```
 
-### value常用五大数据类型
+## Value常用五大数据类型
 
 * 字符串（String）
 * 列表（List）
@@ -29,9 +29,9 @@ flushall				# 通杀全部库
 * 哈希（Hash）
 * 有序集合（Zset）
 
-#### 字符串（String）
+### 字符串（String）
 
-##### 简介
+####简介
 
 string是redis最基本的类型，你可以理解成与Memcache一摸一样的类型，一个key对应一个value
 
@@ -39,7 +39,7 @@ string类型是**二进制安全的**。意味着redis的string可以包含任�
 
 string类型是redis最基本的数据类型，一个redis中字符串values最多可以是512M
 
-##### 常用命令
+#### 常用命令
 
 ```
 set <key> <value> 	# 添加键值对
@@ -76,10 +76,87 @@ getset <key> <value>				# 以旧换新 设置新的同时，获取旧值
 
  `incr <key>`时，具有原子性
 
-##### 数据结构
+#### 数据结构
 
 string的数据结构为简单动态字符串(Simple Dynamic String，简写SDS)，是可以修改的字符串，内部结构类似java中的ArrayList，采用预分配冗余空间的方式来减少内存的频繁分配
 
 <img src="./images/1.jpg">
 
 内部预分配的空间capacity一般要高于实际字符串长度len，当字符串长度<1M时，扩容都是加倍现有空间，当超过1M时，一次只会多扩1M空间，不一定是2倍。最大512M
+
+
+
+### 列表（List）
+
+#### 简介
+
+单键多值
+
+redis列表是简单的字符串列表，按照插入顺序排序。可以添加一个元素到列头或列尾
+
+它的底层实际是个双向链表，对两端的操作性能很高，通过索引下标的操作中间的节点性能会比较差
+
+<img src='./images/2.png'>
+
+#### 常用命令
+
+```
+lpush/rpush <key><value1><value2><value3>... # 从左边/右边插入一个或多个值
+lpop/rpop <key>		# 从左边/右边吐出一个值。值在键在，值光键亡
+
+rpoplpush <key1><key2> 从<key1>列表右边吐出一个值，插入到<key2>列表左边
+
+lrange <key><start><stop>		# 按照索引下标获取元素(从左到右) 0：左第一个 -1:右第一个
+
+lindex <key><index>		# 按照索引下标获取元素
+llen <key>		# 获得列表长度
+
+linsert <key> before/after <value><newvalue>	#在<value>前或后插入<newvalue>
+lrem <key><n><value> 		# 从左边删除n个value
+lset <key><index><value> 	# 将列表key下标为index的值替换成value
+```
+
+
+
+#### 数据结构
+
+list的底层数据结构是一个快速链表 quickList
+
+当元素比较少时，会分配一块**连续的内存**空间，这个结构是ziplist，即压缩列表，将所有元素紧挨在一起存储
+
+当元素多时，把多个ziplist连接起来，变成quicklist
+
+<img src='./images/3.png'>
+
+链表需要额外存储指针，所以占用空间较大，比如双向链表需要两个指针
+
+redis的quicklist，既满足快速增删，又不会有太多冗余
+
+
+
+### 集合（Set）
+
+#### 简介
+
+无序不可重复的string元素
+
+#### 常用命令
+
+```
+sadd <key><value1><value2> ... # 添加元素到集合
+smembers <key>			# 取出集合所有元素
+sismember <key><value> 	# 判断集合<key>是否含有<value>
+scard <key>		# 返回集合元素个数
+srem <key> <value1><value2>...  # 删除集合中的某个元素
+spop <key>		# 随机从该集合中吐出并删除一个值
+srandmember <key><n> # 随机从该集合中取出n个值，不会从集合中删除
+smove <k1><k2> value # 把集合中的一个值，从k1移动到k2
+sinter <k1><k2> 	# 返回两个集合的交集
+sunion <k1><k2> 	# 返回两个集合的并集
+sdiff <k1><k2> 		# 返回两个集合的差集，在k1不在k2
+
+```
+
+#### 数据结构
+
+set数据结构是dict字典，字典是哈希表实现的
