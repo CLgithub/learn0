@@ -160,3 +160,60 @@ sdiff <k1><k2> 		# 返回两个集合的差集，在k1不在k2
 #### 数据结构
 
 set数据结构是dict字典，字典是哈希表实现的
+
+
+
+### 哈希（Hash）
+
+#### 简介
+
+redis hash是一个键值对集合，类似java中的map
+
+redis hash是一个string类型的field和value的映射表，hash特别适合用于存储对象，如key=user1，value={id=1,name=tom,age=20}，Map<Sting,Object>
+
+#### 常用命令
+
+```
+hset <key><field><value> 	# 给指定key集合中的field键赋值value
+hget <key><field>				# 获取key中field的值
+hmset <key><field1><value1><field2><value2>...		# 批量设置
+hexists <key><field1> # 查看key中field1是否存在
+hkeys <key>						# 列出key中的所有field
+hvals <key>						# 列出key中的所有value
+
+hincrby <key><field><increment>		# 为key中的field的值，增加increment
+hsetnx <key><field><value>				# 给指定key集合中的field键赋值value,仅当field不存在时
+```
+
+#### 数据结构
+
+当数据少时，用ziplist，当数据多时，用hashTable
+
+
+
+### 有序集合（Zset）sorted set
+
+#### 简介
+
+有序不可重复的集合，序列是按每个元素所关联的分数进行排序
+
+#### 常用命令
+
+```
+zadd <key><score1><value1><score2><value2>... 	# 将一个或多个member元素及score值加入到有序key中
+zrange <key><start><end> [withscores]					# 取出 key中角标从start到end的值，withscores带上分数，得分从小到大排序
+zrangebyscore k1 100 350 withscores			# 取出k1中 得分在[100,350]之间的value，withscores带上分数，得分从小到大排序
+zrevrangebyscore k1 350 100 withscores		# 取出k1中 得分在[100,350]之间的value，withscores带上分数，得分从大到小排序
+
+
+zincrby <key><increment><value>			# 为key中元素值为value的得分加上increment
+zrem <key><value>										# 删除key下的value
+zcount <key><min><max>							# 统计该集合，分数区间[min,max]内的元素个数
+zrank <key><value>									# 返回该值在集合中的排名，从0开始
+```
+
+#### 数据结构
+
+存储方式类似hash方式，一个key，value中是多个键值对，但是排序会根据得分
+
+采用跳跃表，能更高效的查找数据，但具体如何跳跃？
