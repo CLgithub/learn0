@@ -300,7 +300,34 @@ bitop and k23 k2 k3	# 去k2和k3的并集放入k23
 
 #### 简介
 
+什么是基数?
+
+比如数据集 {1, 3, 5, 7, 5, 7, 8}， 那么这个数据集的基数集为 {1, 3, 5 ,7, 8}, 基数(不重复元素)为5。 基数估计就是在误差可接受的范围内，快速计算基数
+
+为了统计不重复数据，解决基数问题，有两种方案，1）mysql中进行distinct count；2）在redis中使用hash、set、bitmaps等解决，数据精准但空间越来越大
+
+所以退出HyperLogLog，降低精度平衡空间
+
+HyperLogLog 的优点是，在输入元素的数量或者体积非常非常大时，计算基数所需的空间总是固定的、并且是很小的
+
+HyperLogLog 只会根据输入元素来计算基数，而不会储存输入元素本身，所以 HyperLogLog 不能像集合那样，返回输入的各个元素
+
 #### 命令
+
+```
+pfadd <key><element>		# 返回key 中，基数是否发生变化 1:变 0:不变
+pfadd k1 a	# 1
+pfadd k1 b	# 1
+pfadd k1 a	# 0
+
+pfcount <key>		# 计算key的基数
+pfadd k1	# 2
+
+pfmerge <destkey> <sourcekey1> <sourcekey2># 将sourcekey1和sourcekey2得基数汇聚到destkey
+pfmerge k1 k2 k3
+```
+
+
 
 ### Geospatial
 
