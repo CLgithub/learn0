@@ -4,7 +4,7 @@
 
   * 整型：TinyInt(8位1字节)、SmallInt(16位2字节)、MediumInt(24位3字节)、Int(32位4字节)、BigInt(64位8字节)
 
-  ```mysql
+  ```sql
   create table t1(
   	year int(4)	# int(4) 只是显示宽度，和数值大小无关
   );
@@ -45,7 +45,7 @@
      select * from t where t.col1=6;	# col1放在二叉树里类似链表
      ```
 
-     <img src=./images/1.jpg >
+     <img src='./images/1.jpg'>
 
      ```mysql
      # 红黑树为例 只需要查找3次
@@ -86,7 +86,7 @@ MySQL索引采用 B+树结构，有以下特点
 <img src="./images/5.png">
          
 
-```mysql
+```sql
 show global status like 'innodb_page_size'; # innoDB页大小
 # 16384=1024*16
 # 每个大节点大小为16k Byte
@@ -181,7 +181,7 @@ explain select * from t1 where b=1 and c=1 and d=1; # 走索引 但是只能查�
 
 存储方式按字段逐个比较
 
-```mysql
+```sql
 explain select * from t1 where b=1; # 走索引 ref idx_t1_bcd 先索引再回表，相当于用1** 去bcd索引树中查找
 explain select * from t1 where b>1; # 不走bcd索引，走全表扫描，因为走全表扫描更快（走索引只能定位1**，后面的需要7次回表，不如全表扫描）仅限于5.7版本，mysql8走了索引
 explain select * from t1 where b>6; # 走索引 range idx_t1_bcd（只需要一次回表）
@@ -213,7 +213,7 @@ explain select * from t1 where a='1';	# const PRIMARY
 
 Explain关键字：使用explain关键字可以模拟优化器执行sql语句，分析你的查询语句或是结构的性能评价。在select语句之前添加explain关键字，Mysql会在查询上设置一个标记，执行查询会返回执行计划的信息，而不是执行这条sql，注意：如果from中包含子查询，仍会执行孩子查询，将结果放入临时表中
 
-```mysql
+```sql
 explain select * from t1 where a=1 and b=1
 ```
 
@@ -511,4 +511,7 @@ mysql默认的复制方式是**异步复制**的，主库把日志发出之后�
 
 * 半同步复制
 
-  主库写入binLog后，主库收到至少一个从库的确认就认为写操作完成
+主库写入binLog后，主库收到至少一个从库的确认就认为写操作完成
+
+
+

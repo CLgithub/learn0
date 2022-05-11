@@ -1,5 +1,6 @@
 package com.cl.learn.springboot.springbootdemo1.controller;
 
+import com.cl.learn.springboot.springbootdemo1.entity.User;
 import com.cl.learn.springboot.springbootdemo1.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,8 +17,7 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/test")
-    public String test(){
-        String test = userService.test();
-        return test;
+    public User test(){
+        return userService.test();
     }
 }
