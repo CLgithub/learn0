@@ -27,10 +27,33 @@ SpringBoot，自动引入依赖，自动配置
 
 
     
-## starter
+### starter
 
 官方starter命名`spring-boot-starter-xxx`
 第三方starter命名`xxx-spring-boot-starter`
 
 引入starter后，相关依赖也会自动引入，不需要自己再去查找引入
 
+### @Configuration
+作用：告诉spring这是一个配置Bean
+```java
+public @interface Configuration {
+    @AliasFor(
+        annotation = Component.class
+    )
+    String value() default "";
+    // proxyBeanMethods默认为true，表示@Configuration修饰的配置Bean中，在执行@Bean修饰的方法时，是走代理的逻辑（从spring容器中获取）否直接执行
+    // 一般都是单例bean，@Bean方法在配置类中相互调用时，应该想要得到的是同一个对象，所以默认为true
+    boolean proxyBeanMethods() default true;
+}   
+```
+
+* @ImportResource("spring.xml") //导入资源
+* @Import(Order.class)    // 导入bean
+* 自动配置
+    SpringFactoriesLoader中，会使用类加载器去加载类路径下`META-INF/spring.factories`中的资源（各种类型分组），利用注解进行条件判断，排除不需要的，最终得到需要的bean 
+### @SpringBootApplication注解
+* SpringBootConfiguration 告诉spring这是一个配置Bean
+* EnableAutoConfiguration 启用自动配置
+    * 类加载器去加载类路径下`META-INF/spring.factories`中的资源（各种类型分组），利用注解进行条件判断，排除不需要的，最终得到需要的bean
+* ComponentScan 扫描
