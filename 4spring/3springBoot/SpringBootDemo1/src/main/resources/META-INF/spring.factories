@@ -1,3 +1,8 @@
+# Initializers
+org.springframework.context.ApplicationContextInitializer=\
+com.cl.learn.springboot.springbootdemo1.config.MyApplicationContextInitializer
+
+
 # SpringFactoriesLoader中，会使用类加载器去加载 "META-INF/spring.factories"中的资源，因此MyConfig就被扫描进入容器，即使不在springbootdemo1下也可以
 # Auto Configure
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\

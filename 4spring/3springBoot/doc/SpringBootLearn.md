@@ -27,12 +27,19 @@ SpringBoot，自动引入依赖，自动配置
 
 
     
-### starter
+## starter
 
 官方starter命名`spring-boot-starter-xxx`
 第三方starter命名`xxx-spring-boot-starter`
 
 引入starter后，相关依赖也会自动引入，不需要自己再去查找引入
+
+starter包含：
+* 该starter所需的相关依赖
+* META-INF/spring.factories
+* xxxAutoConfiguration
+
+`引入starter--->自带META-INF/spring.factories--->引导加载自己的xxxAutoConfiguration--->其中很多条件判断--->引导加载相关依赖--->整合了xxx`
 
 ### @Configuration
 作用：告诉spring这是一个配置Bean
@@ -55,5 +62,5 @@ public @interface Configuration {
 ### @SpringBootApplication注解
 * SpringBootConfiguration 告诉spring这是一个配置Bean
 * EnableAutoConfiguration 启用自动配置
-    * 类加载器去加载类路径下`META-INF/spring.factories`中的资源（各种类型分组），利用注解进行条件判断，排除不需要的，最终得到需要的bean
+    * 类加载器去加载类路径下`META-INF/spring.factories`中的资源（各种类型分组），利用注解进行条件判断，排除不需要的，最终得到需要的bean，[具体如何做](./SpringBoot原理.md)
 * ComponentScan 扫描

@@ -10,11 +10,12 @@ import com.cl.learn.springboot.springbootdemo1.entity.User;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 
 
-//@SpringBootConfiguration(proxyBeanMethods = false)
+@Configuration(proxyBeanMethods = true)
 //@ImportResource("spring.xml")   // 引入资源
 //@Import(Order.class)    // 导入一个bean
 public class MyConfig {
