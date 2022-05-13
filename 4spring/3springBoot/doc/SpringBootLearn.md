@@ -60,10 +60,10 @@ public @interface Configuration {
 * 自动配置
     SpringFactoriesLoader中，会使用类加载器去加载类路径下`META-INF/spring.factories`中的资源（各种类型分组），利用注解进行条件判断，排除不需要的，最终得到需要的bean 
 ### @SpringBootApplication注解
-* SpringBootConfiguration 告诉spring这是一个配置Bean
-* EnableAutoConfiguration 启用自动配置
+* @SpringBootConfiguration 告诉spring这是一个配置Bean
+* @EnableAutoConfiguration 启用自动配置
     * 类加载器去加载类路径下`META-INF/spring.factories`中的资源（各种类型分组），利用注解进行条件判断，排除不需要的，最终得到需要的bean，[具体如何做](./SpringBoot原理.md)
-* ComponentScan 扫描
+* @ComponentScan 扫描
 
 ```java
 //@SpringBootApplication
@@ -108,3 +108,9 @@ public class MyApplication {
 @ConditionalOnResource // 指定资源是否存在
 @ConditionalOnCloudPlatform // 是否在某个云平台上 运行的操作系统环境 docker相关
 ```
+
+#### 属性绑定
+* @PropertySource 注解，指定配置文件
+* @EnableConfigurationProperties({P.class,P2.class}) 用来指定P,P2为属性封装类，把配置中的内容绑定到P,P2中，这样设计的目的是，在满足一定条件后，再去开启属性绑定
+* @ConfigurationPropertiesScan("com.properties") 将`com.properties`包下的有`@ConfigurationProperties`注解的所有类指定为属性封装类
+* @ConfigurationProperties 暂时理解标记属性封装类的作用，可以设置前缀

@@ -1,0 +1,31 @@
+package com.cl.learn.springboot.springbootdemo2.properties;
+
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+/**
+ * @Author l
+ * @Date 2022/5/13 13:48
+ */
+@ConfigurationProperties(prefix = "p1")
+public class P1 {
+    private String k1;
+    private String k2;
+
+    public String getK1() {
+        return k1;
+    }
+
+    public void setK1(String k1) {
+        this.k1 = k1;
+    }
+
+    public String getK2() {
+        return k2;
+    }
+
+    public void setK2(String k2) {
+        this.k2 = k2;
+    }
+
+}
