@@ -15,7 +15,7 @@ public class MyStarterTestApplication {
     public static void main(String[] args) {
         ConfigurableApplicationContext applicationContext = SpringApplication.run(MyStarterTestApplication.class, args);
         Service1 bean = applicationContext.getBean(Service1.class);
-        String s = bean.test1();
+        String s = bean.test1("abc");
         System.out.println(s);
     }
 }
