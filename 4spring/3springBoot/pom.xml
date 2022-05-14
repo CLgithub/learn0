@@ -13,11 +13,10 @@
     <packaging>pom</packaging>
     <modules>
         <module>SpringBootDemo1</module>
-        <module>SpringBoot2PropertyBuild</module>
         <module>SpringBootDemo2PropertiesBuild</module>
-        <module>myStarter1-spring-boot-starter</module>
         <module>SpringBootDemo3MyStarter-spring-boot-starter</module>
         <module>SpringBootDemo3MyStarter-spring-boot-starter-test</module>
+        <module>SpringBootDemo4ProFiles</module>
     </modules>
 
     <properties>

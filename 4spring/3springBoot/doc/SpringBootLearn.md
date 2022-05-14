@@ -114,3 +114,16 @@ public class MyApplication {
 * @EnableConfigurationProperties({P.class,P2.class}) 用来指定P,P2为属性封装类，把配置中的内容绑定到P,P2中，这样设计的目的是，在满足一定条件后，再去开启属性绑定
 * @ConfigurationPropertiesScan("com.properties") 将`com.properties`包下的有`@ConfigurationProperties`注解的所有类指定为属性封装类
 * @ConfigurationProperties 暂时理解标记属性封装类的作用，可以设置前缀
+
+## 环境变量
+优先级：JVM(启动时参数配置) > 操作系统 > application.properties > application.yml
+
+### Profiles文件
+不同环境，不同的配置文件
+```
+application.properties          # 默认
+application-xxx1.properties     # xxx1环境
+application-xxx2.properties     # xxx2环境
+```
+在intellij中，可通过`Environment variables`:`spring.profiles.active=xxx1`来进行选择配置
+实际部署启动时，可通过启动脚本`java -jar -D:spring.profiles.active=xxx2 SpringBootDemo4ProFiles-1.0-SNAPSHOT.jar`进行配置
