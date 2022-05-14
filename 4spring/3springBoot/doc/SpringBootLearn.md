@@ -60,6 +60,7 @@ public @interface Configuration {
 * 自动配置
     SpringFactoriesLoader中，会使用类加载器去加载类路径下`META-INF/spring.factories`中的资源（各种类型分组），利用注解进行条件判断，排除不需要的，最终得到需要的bean 
 ### @SpringBootApplication注解
+<<<<<<< HEAD
 * @SpringBootConfiguration 告诉spring这是一个配置Bean
 * @EnableAutoConfiguration 启用自动配置
     * 类加载器去加载类路径下`META-INF/spring.factories`中的资源（各种类型分组），利用注解进行条件判断，排除不需要的，最终得到需要的bean，[具体如何做](./SpringBoot原理.md)
@@ -127,3 +128,9 @@ application-xxx2.properties     # xxx2环境
 ```
 在intellij中，可通过`Environment variables`:`spring.profiles.active=xxx1`来进行选择配置
 实际部署启动时，可通过启动脚本`java -jar -D:spring.profiles.active=xxx2 SpringBootDemo4ProFiles-1.0-SNAPSHOT.jar`进行配置
+=======
+* SpringBootConfiguration 告诉spring这是一个配置Bean
+* EnableAutoConfiguration 启用自动配置
+    * 类加载器去加载类路径下`META-INF/spring.factories`中的资源（各种类型分组），利用注解进行条件判断，排除不需要的，最终得到需要的bean，[具体如何做](./SpringBoot原理.md)
+* ComponentScan 扫描
+>>>>>>> 867ae957c3643e29dc6084569e5727ab9c94bab6

@@ -1,6 +1,7 @@
 package com.cl.learn.springboot.springbootdemo1;
 
 import com.cl.learn.springboot.other.MyConfig;
+import com.cl.learn.springboot.springbootdemo1.config.MyType;
 import com.cl.learn.springboot.springbootdemo1.entity.Order;
 import com.cl.learn.springboot.springbootdemo1.service.OrderService;
 import com.cl.learn.springboot.springbootdemo1.service.UserService;
