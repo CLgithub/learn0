@@ -2,9 +2,12 @@ package com.cl.learn.springboot.springbootdemo4.controller;
 
 import com.cl.learn.springboot.springbootdemo4.server.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Arrays;
 
 /**
  * @Author l
@@ -12,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping
-public class UserController {
+public class UserController  {
 
     @Autowired
     private UserService userService;
@@ -21,4 +24,6 @@ public class UserController {
     public String getName(){
         return userService.getName();
     }
+
+
 }

@@ -59,8 +59,16 @@ public @interface Configuration {
 * @Import(Order.class)    // 导入bean
 * 自动配置
     SpringFactoriesLoader中，会使用类加载器去加载类路径下`META-INF/spring.factories`中的资源（各种类型分组），利用注解进行条件判断，排除不需要的，最终得到需要的bean 
+    
+    loadSpringFactories，会加载类路径中的spring.factories文件，spring.factories共有3个，分别
+    * spring-boot.jar/META-INF/spring.factories
+    * spring-beans.jar/META-INF/spring.factories
+    * spring-boot-autoconfigure.jar/META-INF/spring.factories
+ 
+    共有key13个，并缓存在一个Map中
+    <img src='./images/1.png'>
+
 ### @SpringBootApplication注解
-<<<<<<< HEAD
 * @SpringBootConfiguration 告诉spring这是一个配置Bean
 * @EnableAutoConfiguration 启用自动配置
     * 类加载器去加载类路径下`META-INF/spring.factories`中的资源（各种类型分组），利用注解进行条件判断，排除不需要的，最终得到需要的bean，[具体如何做](./SpringBoot原理.md)
@@ -128,9 +136,101 @@ application-xxx2.properties     # xxx2环境
 ```
 在intellij中，可通过`Environment variables`:`spring.profiles.active=xxx1`来进行选择配置
 实际部署启动时，可通过启动脚本`java -jar -D:spring.profiles.active=xxx2 SpringBootDemo4ProFiles-1.0-SNAPSHOT.jar`进行配置
-=======
-* SpringBootConfiguration 告诉spring这是一个配置Bean
-* EnableAutoConfiguration 启用自动配置
-    * 类加载器去加载类路径下`META-INF/spring.factories`中的资源（各种类型分组），利用注解进行条件判断，排除不需要的，最终得到需要的bean，[具体如何做](./SpringBoot原理.md)
-* ComponentScan 扫描
->>>>>>> 867ae957c3643e29dc6084569e5727ab9c94bab6
+
+## 启动流程
+1. 生成一个`SpringApplication`对象
+    1. `webApplicationType = `推测应用类型（None/Servlet/Reactive）
+    2. 从`spring.factories`中获取 **1、BootstrapRegistryInitializer** **2、应用容器初始化器** 和 **3、应用监听器**
+    3. 推断主启动类
+    ```java
+    // 主要都是在给属性赋值
+    public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySources) {
+		// 给资源加载器赋值
+		this.resourceLoader = resourceLoader;
+		Assert.notNull(primarySources, "PrimarySources must not be null");
+		// 启动时传入的主启动类，封装后赋值给primarySources
+		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+		// 从类路径下的类的情况，推断是否为web应用，如果是是哪种web应用（Servlet/Reactive）
+		this.webApplicationType = WebApplicationType.deduceFromClasspath();
+		// 下面三处，均执行getSpringFactoriesInstances方法，得到的结果放入集合，getSpringFactoriesInstances根据传入参数，获取META-INF/spring.factories中对应类型的类s，实例化后排序并返回
+		this.bootstrapRegistryInitializers = new ArrayList<>(
+				getSpringFactoriesInstances(BootstrapRegistryInitializer.class));
+		setInitializers((Collection) 
+		// 应用容器初始化器 7个
+		getSpringFactoriesInstances(ApplicationContextInitializer.class));
+		// 应用监听器 目前有8个
+		setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+		// 推断主启动类（从内存的线程栈中去找main）
+		this.mainApplicationClass = deduceMainApplicationClass();
+	}
+    ````
+2. 执行`SpringApplication`的`run()`方法
+    1. 获取运行状态监听器`SpringApplicationRunListener(EventPublishingRunListener) listener`
+    2. `EventPublishingRunListener.starting()`
+    3. 创建一个`Spring`容器context
+    4. 准备容器prepareContext
+        1. 执行初始化器的初始化方法
+        2. 调用运行状态监听器`listener`的contextPrepared()方法，表示容器已经准备好了
+        3. 把run方法传进来的类注册到Spring容器中，成为一个Bean
+        4. 调用运行状态监听器`listener`的contextLoaded()方法，表示容器加载完成
+    5. 刷新Spring容器，会解析配置类、扫描、启动webServer（AutoConfigurationImportSelector其实在此时也会去解析，AutoConfigurationImportSelector）
+    6. `listeners.started(context, timeTakenToStartup);`表示启动完成
+    7. `callRunners`在容器中获取`ApplicationRunner`和`CommandLineRunner`的bean，执行其中的run方法
+    8. `listeners.ready(context, timeTakenToReady);`
+    9. 返回context
+    ```java
+    public ConfigurableApplicationContext run(String... args) {
+		// 记录开始时间
+		long startTime = System.nanoTime(); 
+		//暂时先不管
+		DefaultBootstrapContext bootstrapContext = createBootstrapContext();
+		// 定义spring容器	
+		ConfigurableApplicationContext context = null; 
+		configureHeadlessProperty();
+		// 获取运行状态监听器（在spring.factories中去获取）得到EventPublishingRunListener，它会在启动过程的各个阶段，发布对应的事件
+		SpringApplicationRunListeners listeners = getRunListeners(args);
+		// 监听主启动类的状态为「启动中」时（背后去调「启动中」对应的回调函数）
+		listeners.starting(bootstrapContext, this.mainApplicationClass);
+		try {
+			// 封装run方法的参数为一个对象
+			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
+			// 准备环境，封装到environment中
+			ConfigurableEnvironment environment = prepareEnvironment(listeners, bootstrapContext, applicationArguments);
+			// 暂时不管 配置bean信息
+			configureIgnoreBeanInfo(environment);
+			// 打印图标
+			Banner printedBanner = printBanner(environment);
+			// 创建context，函数式接口，根据应用类型this.webApplicationType，创建不同的spring容器context
+			context = createApplicationContext();
+			// 暂时不管
+			context.setApplicationStartup(this.applicationStartup);
+			// 1 执行初始化器的初始化方法
+			// 2 调用运行状态监听器的contextPrepared()方法，表示容器已经准备好了
+			// 3 把run方法传进来的类注册到Spring容器中，成为一个Bean
+			// 4 调用运行状态监听器的contextLoaded()方法，表示容器加载完成
+			prepareContext(bootstrapContext, context, environment, listeners, applicationArguments, printedBanner);
+			// 刷新Spring容器，会解析配置类、扫描、启动webServer
+			refreshContext(context);
+			afterRefresh(context, applicationArguments);
+			Duration timeTakenToStartup = Duration.ofNanos(System.nanoTime() - startTime);
+			if (this.logStartupInfo) {
+				new StartupInfoLogger(this.mainApplicationClass).logStarted(getApplicationLog(), timeTakenToStartup);
+			}
+			listeners.started(context, timeTakenToStartup);
+			callRunners(context, applicationArguments);
+		}
+		catch (Throwable ex) {
+			handleRunFailure(context, ex, listeners);
+			throw new IllegalStateException(ex);
+		}
+		try {
+			Duration timeTakenToReady = Duration.ofNanos(System.nanoTime() - startTime); // 得到用了多少时间
+			listeners.ready(context, timeTakenToReady);
+		}
+		catch (Throwable ex) {
+			handleRunFailure(context, ex, null);
+			throw new IllegalStateException(ex);
+		}
+		return context;
+	}
+    ```
