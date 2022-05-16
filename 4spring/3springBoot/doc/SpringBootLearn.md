@@ -71,7 +71,7 @@ public @interface Configuration {
 ### @SpringBootApplication注解
 * @SpringBootConfiguration 告诉spring这是一个配置Bean
 * @EnableAutoConfiguration 启用自动配置
-    * 类加载器去加载类路径下`META-INF/spring.factories`中的资源（各种类型分组），利用注解进行条件判断，排除不需要的，最终得到需要的bean，[具体如何做](./SpringBoot原理.md)
+    * 类加载器去加载类路径下`META-INF/spring.factories`中的资源（各种类型分组），并获取到其中的`AutoConfigurationImportFilter`，利用注解进行条件判断，排除不需要的，最终得到需要的bean，[具体如何做](./SpringBoot原理.md)
 * @ComponentScan 扫描
 
 ```java
@@ -245,7 +245,83 @@ SpringApplication.run(Application.class,args);
     2. 刷新容器
         1. 解析配置类
         2. 扫描和解析@Bean
-        3. 加载 MATE-INF/spring.factories 中的自动配置
-        4. 启动Tomcat，如果有
+        3. 加载 MATE-INF/spring.factories 中的自动配置（启动Tomcat，如果有，Tomcat依赖从自动配置而来）
     3. 执行callRunner
     4. 返回
+    
+2.2.4 启动Tomcat
+```java
+MATE-INF/spring.factories--->ServletWebServerFactoryAutoConfiguration--->ServletWebServerFactoryCustomizer自定义器 和WebServerFactoryCustomizerBeanPostProcessor 初始化前处理器
+SpringApplication.run(){
+    ...
+    refreshContext(context);
+        ...
+        ServletWebServerApplicationContext.createWebServer(){
+            // 会调用WebServerFactoryCustomizerBeanPostProcessor bean初始化前处理器，修改参数
+            ServletWebServerFactory factory = getWebServerFactory();
+            this.webServer = factory.getWebServer(getSelfInitializer());
+                ...
+                TomcatServletWebServerFactory.getWebServer(ServletContextInitializer... initializers) {
+                    // 创建
+                    Tomcat tomcat = new Tomcat();
+                    // 设置参数
+                    customizeConnector(connector);
+                        void customizeConnector(Connector connector) {
+                            int port = Math.max(getPort(), 0);
+                                AbstractConfigurableWebServerFactory.port = 8080;
+                            connector.setPort(port);
+                            ...
+                        }
+                    tomcat.setConnector(connector);
+                    ...
+                    //返回并启动
+                    return getTomcatWebServer(tomcat);
+                        ...
+                        TomcatWebServer(Tomcat tomcat, boolean autoStart, Shutdown shutdown){
+                            ...
+                            private void initialize() throws WebServerException {
+                                ...
+                                // Start the server to trigger initialization listeners
+                                this.tomcat.start(); //并不会去阻塞
+				                ...
+				                // 开启另外一个线程，去while(true)阻塞接收请求
+                            }
+                        }
+                }
+        }
+}   
+```
+
+
+若在`application.properties`中设置了`server.port=8081`会被属性绑定到`ServerProperties`中，`ServletWebServerFactoryAutoConfiguration`中`@Bean`定义了`ServletWebServerFactoryCustomizer`
+在`ServletWebServerFactoryCustomizer`自定义器的自定义方法
+```java
+public class ServletWebServerFactoryCustomizer
+		implements WebServerFactoryCustomizer<ConfigurableServletWebServerFactory>, Ordered {
+	@Override
+	public void customize(ConfigurableServletWebServerFactory factory) {
+		PropertyMapper map = PropertyMapper.get().alwaysApplyingWhenNonNull();
+		map.from(this.serverProperties::getPort).to(factory::setPort);
+		map.from(this.serverProperties::getAddress).to(factory::setAddress);
+        map.from(this.serverProperties.getServlet()::getContextPath).to(factory::setContextPath);
+        ...
+    }
+}
+```
+`factory.setPort` 实现至`interface ConfigurableWebServerFactory.setPort`
+`AbstractConfigurableWebServerFactory.port`也是
+何时调用customize方法?
+```java
+// 实现了BeanPostProcessor接口，创建bean初始化前处理器
+// 哪个bean？WebServerFactory（TomcatServletWebServerFactory）
+public class WebServerFactoryCustomizerBeanPostProcessor implements BeanPostProcessor, BeanFactoryAware {
+    ...
+    ...
+    // bean初始化前，敢一些事，调用WebServerFactoryCustomizer自定义器的customize方法
+    private void postProcessBeforeInitialization(WebServerFactory webServerFactory) {
+		LambdaSafe.callbacks(WebServerFactoryCustomizer.class, getCustomizers(), webServerFactory)
+				.withLogger(WebServerFactoryCustomizerBeanPostProcessor.class)
+				.invoke((customizer) -> customizer.customize(webServerFactory));
+	}
+}
+```
