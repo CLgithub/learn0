@@ -234,3 +234,18 @@ application-xxx2.properties     # xxx2环境
 		return context;
 	}
     ```
+
+SpringApplication.run(Application.class,args);
+1. 创建SpringApplication应用
+    1. 推断应用类型，web/非web，（根据类路径中有哪些类）
+    2. 加载 MATE-INF/spring.factories 中的 初始化器 和 监听器
+    3. 推断主启动类
+2. 调用SpringApplication.run方法
+    1. 创建SpringContext，并调用初始化器对容器进行初始化
+    2. 刷新容器
+        1. 解析配置类
+        2. 扫描和解析@Bean
+        3. 加载 MATE-INF/spring.factories 中的自动配置
+        4. 启动Tomcat，如果有
+    3. 执行callRunner
+    4. 返回
