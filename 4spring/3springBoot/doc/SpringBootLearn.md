@@ -39,7 +39,7 @@ starter包含：
 * META-INF/spring.factories
 * xxxAutoConfiguration
 
-`引入starter--->自带META-INF/spring.factories--->引导加载自己的xxxAutoConfiguration--->其中很多条件判断--->引导加载相关依赖--->整合了xxx`
+`引入starter--->自带META-INF/spring.factories--->引导加载自己的xxxAutoConfiguration--->其中很多条件判断--->引导加载相关依赖--->配置/绑定属性--->整合了xxx`
 
 ### @Configuration
 作用：告诉spring这是一个配置Bean
