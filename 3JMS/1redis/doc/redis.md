@@ -411,10 +411,10 @@ Redis事务的主要作用就是串联多个命令防止别的命令插队
 ## 持久化
 redis提供2个不同形式的持久化方式
 * RDB（Redis DataBase）
-* AOF（Append Of File）
+* AOF（Append Only File）
 
 ### RDB
-在指定的 **时间间隔** 内将内存中的数据集快照写入磁盘，Snapshot快照，恢复时将快照文件直接读到内存
+在指定的 **时间间隔** 内将内存中的 **数据集快照** 写入磁盘，Snapshot快照，恢复时将快照文件直接读到内存
 
 * RDB持久化过程
     1. 每一定时间间隔，redis 单独创建一个子进程fork，子进程的所有数据和原进程一致。
@@ -422,7 +422,9 @@ redis提供2个不同形式的持久化方式
     3. 写入结束后，再用临时文件替换上次持久化好的文件
     <img src='./images/7.png'>
     
-整改过程中，原进程无任何IO操作，确保极高的性能
+为什么要这么做：
+1. 整改过程中，原进程无任何IO操作，确保极高的性能
+2. 写完整的数据后，再进行覆盖，避免突然断掉出现中间情况
 
 RDB的触发：
 * save：save时只管保存，其它不管，全部阻塞。手动保存。不建议
@@ -434,14 +436,17 @@ RDB的触发：
 >flushall    # 会清空dump.rdb文件
 ```
 
-* redis.conf配置文件中
+* RDB在redis.conf配置文件中相关配置
     ```
     dbfilename  dump.rdb    # 持久化文件名
     dir ./                  # 存储位置
+    stop-writes-on-bgsave-error yes     # 当redis无法写入磁盘时，直接关闭redis的写操作
+    
     rdbcompression yes/no   # 是否对快照进行压缩存储。如果是的话，redis会采用LZF算法进行压缩
+    rdbchecksum yes         # 是否进行完整性检测，redis使用CRC64算法来进行数据校验
+    
     save yes                # 是否采用save
     save s c                # 即s秒内，若数据修改次数超过或等于c次，就进行持久化
-    rdbchecksum yes         # 在存储快照后，还可以让redis使用CRC64算法来进行数据校验
     ```
 
 * rdb的备份
@@ -456,3 +461,38 @@ RDB的触发：
     * fork的时候，内存中的数据被克隆了一份，消耗2倍的内存空间
     * 虽然redis在fork时，使用了 **写时拷贝技术**，但是如果数据庞大时还是比较消耗性能
     * 若是一定时间间隔做一次备份，若redis意外down掉，就会丢失最后一次快照所修改的内容（没来得及写入）
+
+### AOF
+以日志的形式来记录每一个**写操作**，将redis执行过的所有写指令记录下来，只允许追加文件但不可以改写文件，redis启动时会读取该文件，将数据恢复
+* AOF持久化过程
+    1. 客户端的请求写命令会被append到AOF缓冲区内；
+    2. AOF缓冲区根据AOF持久化策略将操作同步到磁盘的AOF文件
+    3. AOF文件大小超过重写策略或手动重写时，AOF文件被重写，对AOF文件进行压缩
+    4. redis重启时，会加载AOF文件中的操作，达到数据恢复的目的
+        <img src='./images/9.jpeg'>
+
+* AOF默认不开启
+```
+appendonly on                       # AOF是否开启，默认不开启
+appendfilename "appendonly.aof"     # AOF文件名
+# 存储路径与RDB的dump.rdb文件相同
+```
+* 优先权 AOF>RDB
+    因为RDB可能数据不完整
+    
+#### AOF 文件修复
+若AOF文件损坏，可通过以下命令进行修复
+```
+/usr/local/bin/redis-check-aof --fix appendonly.aof 
+# 利用redis-check-aof对appendonly.aof文件进行修复
+```
+
+#### AOF同步频率
+```
+appendsync always   # 始终同步，每次Redis的写入都会立刻记入日志；性能较差但数据完整性比较好
+appendsync everysec # 每秒同步，每秒记入日志一次，若宕机，本秒数据可能丢失
+appendsync no       # redis不主动进行同步，把同步时机交给操作系统
+```
+
+#### Rewrite 重写压缩
+将多条命令转换成一条命令，结果一样，但却节约了空间
