@@ -463,7 +463,7 @@ save s c                # 开启自动RDB，s秒内，若数据修改次数超�
 
 #### AOF持久化过程
 1. 客户端的请求写命令会被append到AOF缓冲区内；
-2. AOF缓冲区根据AOF持久化策略将操作同步到磁盘的AOF文件
+2. AOF缓冲区根据AOF持久化策略`[always\everysec\no]`将操作同步到磁盘的AOF文件
 3. AOF文件大小超过重写策略或手动重写时，AOF文件被重写，对AOF文件进行压缩
 4. redis重启时，会加载AOF文件中的操作，达到数据恢复的目的
     <img src='./images/9.png'>
@@ -532,3 +532,57 @@ no-appendfsync-on-rewrite yes/no   # 在重写时，不同步aof_buf到appendonl
 * 因为RDB文件只用作后备用途，建议只在Slave上持久化RDB文件，而且只要15分钟备份一次就够了，只保留save 900 1这条规则
 * 只要硬盘许可，应该尽量减少AOF rewrite的频率，AOF重写的基础大小默认值64M太小了，可以设到5G以上
 * 默认超过原大小100%大小时重写可以改到适当的数值
+
+
+## 主从复制
+* 能干嘛
+    * 读写分离，性能扩展
+    * 荣宅快速恢复
+    <img src='./images/11.png'>
+    
+* 怎么玩
+    * 一份redis.conf文件，关闭AOF
+    * 多分redis_xxx.conf文件，文件中
+        ```bash
+        include /myredis/redis.conf # 导入同一份redis.conf
+        pidfile /var/run/redis_xxx.pid  # 定义自己的pid文件
+        prot xxx    # 定义自己的端口
+        dbfilename dumpxxx.rdb  # 定义自己的rdb文件
+        ```
+    * 分别启动多台
+        ```
+        > redis-server redis_xxx.conf
+        > ...
+        ```
+    * 查看主从复制详细
+        ```
+        > redis-cli -p xxx  # 连接xxxredis
+        > info replication
+        ```
+    * 分配主从服务器，
+        ```
+        > slaveof master_ip master_port     # 将该redis归从于master
+        ```
+* 相关属性
+    * `slave`节点只能读，不能写
+    * 一主二扑：`master`节点挂掉，`slave`默认还是只认他
+    * 薪火相传：`slave`子节点依然可以收子节点，相关属性一样
+    * 反客为主：当`master`挂掉后，在某子节点上执行`slaveof no one`，可将其变为主节点
+* 哨兵模式(sentinel)
+    * 反客为主自动版
+    * 怎么玩
+        * 新建`sentinel.conf`文件，写入以下内容
+            ```
+            sentinel monitor myMaster <master_ip> <master_port> 2
+            # myMaster为监视对象起的名称，2 代表至少需要两个Sentinel节点认为主节点主观下线，才可判定主节点为客观下线
+            ```
+        * 启动
+            ```
+            > /usr/local/bin/redis-sentinel sentinel.conf
+            ```
+
+### 主从复制原理
+1. slave启动成功连接到master后，会发送一个sync命令
+2. master接收到命令，启动后台的存盘进程(RDB)，同时收集所有接收到的用于修改数据集的命令，后台进程执行完毕后，将整改数据文件发送给slave，完成一次完全同步
+3. slave接收到文件，加载进内存
+<img src='./images/12.png'>
