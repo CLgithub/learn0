@@ -414,85 +414,121 @@ redis提供2个不同形式的持久化方式
 * AOF（Append Only File）
 
 ### RDB
+#### 做什么
 在指定的 **时间间隔** 内将内存中的 **数据集快照** 写入磁盘，Snapshot快照，恢复时将快照文件直接读到内存
 
-* RDB持久化过程
-    1. 每一定时间间隔，redis 单独创建一个子进程fork，子进程的所有数据和原进程一致。
-    2. fork子进程会先将数据快照写入到一个临时文件中
-    3. 写入结束后，再用临时文件替换上次持久化好的文件
-    <img src='./images/7.png'>
+#### RDB持久化过程
+1. 每一定时间间隔，redis 单独创建一个子进程fork，子进程的所有数据和原进程一致。
+2. fork子进程会先将 **数据快照**写入到一个临时文件中
+3. 写入结束后，再用临时文件替换上次持久化好的文件
+<img src='./images/7.png'>
     
 为什么要这么做：
 1. 整改过程中，原进程无任何IO操作，确保极高的性能
 2. 写完整的数据后，再进行覆盖，避免突然断掉出现中间情况
 
-RDB的触发：
-* save：save时只管保存，其它不管，全部阻塞。手动保存。不建议
-* bgsave：Redis会在后台异步进行快照操作， 快照同时还可以响应客户端请求
-
-
+#### 配置
+RDB在redis.conf配置文件中相关配置
 ```
->lastsave    # 获取最后一次成功写入快照时间
->flushall    # 会清空dump.rdb文件
+dbfilename  dump.rdb    # 持久化文件名
+dir ./                  # 存储位置
+stop-writes-on-bgsave-error yes     # 当redis无法写入磁盘时，停止redis的写操作
+    
+rdbcompression yes/no   # 是否对快照进行压缩存储。如果是的话，redis会采用LZF算法进行压缩
+rdbchecksum yes         # 是否进行完整性检测，redis使用CRC64算法来进行数据校验
+    
+save s c                # 开启自动RDB，s秒内，若数据修改次数超过或等于c次，就进行持久化
 ```
 
-* RDB在redis.conf配置文件中相关配置
-    ```
-    dbfilename  dump.rdb    # 持久化文件名
-    dir ./                  # 存储位置
-    stop-writes-on-bgsave-error yes     # 当redis无法写入磁盘时，直接关闭redis的写操作
-    
-    rdbcompression yes/no   # 是否对快照进行压缩存储。如果是的话，redis会采用LZF算法进行压缩
-    rdbchecksum yes         # 是否进行完整性检测，redis使用CRC64算法来进行数据校验
-    
-    save yes                # 是否采用save
-    save s c                # 即s秒内，若数据修改次数超过或等于c次，就进行持久化
-    ```
+一些命令
+```
+> config set save "s c"  # 开启自动RDB，s秒内，若数据修改次数超过或等于c次，就进行持久化
+> config set save ""    # 关闭自动RDB
+> save  # 手动同步保存 将当前redis所有数据快照立刻保存到dump.rdb，会有阻塞
+> bgsave    # 手动异步保存 后台异步进行 不阻塞
+> lastsave    # 获取最后一次成功写入快照时间
+> flushall    # 会清空dump.rdb文件
+```
+
 
 * rdb的备份
 当redis启动时，会读取dump.rdb文件到内存中
 
-* 优势
-    * 适合大规模数据恢复
-    * 对数据完整性和一致性要求不高时适用
-    * 节省磁盘空间
-    * 恢复速度快
-* 劣势
-    * fork的时候，内存中的数据被克隆了一份，消耗2倍的内存空间
-    * 虽然redis在fork时，使用了 **写时拷贝技术**，但是如果数据庞大时还是比较消耗性能
-    * 若是一定时间间隔做一次备份，若redis意外down掉，就会丢失最后一次快照所修改的内容（没来得及写入）
+
 
 ### AOF
-以日志的形式来记录每一个**写操作**，将redis执行过的所有写指令记录下来，只允许追加文件但不可以改写文件，redis启动时会读取该文件，将数据恢复
-* AOF持久化过程
-    1. 客户端的请求写命令会被append到AOF缓冲区内；
-    2. AOF缓冲区根据AOF持久化策略将操作同步到磁盘的AOF文件
-    3. AOF文件大小超过重写策略或手动重写时，AOF文件被重写，对AOF文件进行压缩
-    4. redis重启时，会加载AOF文件中的操作，达到数据恢复的目的
-        <img src='./images/9.jpeg'>
 
+#### 做什么
+以日志的形式来记录每一个**写操作**，将redis执行过的所有写指令记录下来，只允许追加文件但不可以改写文件，redis启动时会读取该文件，将数据恢复
+
+#### AOF持久化过程
+1. 客户端的请求写命令会被append到AOF缓冲区内；
+2. AOF缓冲区根据AOF持久化策略将操作同步到磁盘的AOF文件
+3. AOF文件大小超过重写策略或手动重写时，AOF文件被重写，对AOF文件进行压缩
+4. redis重启时，会加载AOF文件中的操作，达到数据恢复的目的
+    <img src='./images/9.png'>
+
+#### 配置、备份
 * AOF默认不开启
 ```
 appendonly on                       # AOF是否开启，默认不开启
 appendfilename "appendonly.aof"     # AOF文件名
 # 存储路径与RDB的dump.rdb文件相同
-```
-* 优先权 AOF>RDB
-    因为RDB可能数据不完整
-    
-#### AOF 文件修复
-若AOF文件损坏，可通过以下命令进行修复
-```
-/usr/local/bin/redis-check-aof --fix appendonly.aof 
-# 利用redis-check-aof对appendonly.aof文件进行修复
-```
 
-#### AOF同步频率
+# AOF同步频率
+appendsync always/everysec/no   
+# always 始终同步，每次Redis的写入都会到缓冲，立刻同步到文件；性能较差但数据完整性比较好
+# everysec 每秒同步，每秒同步一次，若宕机，本秒数据可能丢失
+# no redis不主动进行同步，把同步时机交给操作系统
 ```
-appendsync always   # 始终同步，每次Redis的写入都会立刻记入日志；性能较差但数据完整性比较好
-appendsync everysec # 每秒同步，每秒记入日志一次，若宕机，本秒数据可能丢失
-appendsync no       # redis不主动进行同步，把同步时机交给操作系统
-```
+* AOF 文件修复
+若AOF文件`appendonly.aof`损坏，可用`redis-check-aof`进行修复:
+    ```
+    /usr/local/bin/redis-check-aof --fix appendonly.aof 
+    ```
 
-#### Rewrite 重写压缩
+
+
+#### 重写
 将多条命令转换成一条命令，结果一样，但却节约了空间
+```
+> bgrewriteaof  # 重写命令
+
+# 重写相关配置
+auto-aof-rewrite-percentage:100%     # 重写触发基准，AOF文件是上一次重写后的1倍（默认）
+auto-aof-rewrite-min-size:64M       # 重写触发基准，AOF文件至少64M（默认）
+# 如：文件达到70MB开始重写，降到50MB，下次什么时候开始重写？
+# 答：100M
+
+no-appendfsync-on-rewrite yes/no   # 在重写时，不同步aof_buf到appendonly.aof yes/no
+# yes 重写时不同步，添加命令只会到AOF缓冲aof_buf，不会同步到appendonly.aof
+# no 重写时同步，添加命令会阻塞，等待重写
+```
+
+* 重写流程
+    0、判断当前是否有`bgsave`或`bgrewriteaof`在运行，如果有，就等到结束后再继续执行
+    1、主进程fork出子进程进行重写，保证主进程不会阻塞，与rdb相似
+    2、子进程重写压缩redis内存中数据到临时文件，此时的写入命令，会被同时append到`AOF缓冲区`和`AOF_REWRIEC重写缓存区`
+    3、临时文件重写完成通知主进程，主进程将`重写缓存区`append到已经完成的临时文件
+    4、用重写好并append`重写缓存区`数据的临时文件，替换原AOF文件
+    <img src='./images/10.png'>
+
+#### 优劣势
+* 备份进制稳健，丢失数据概率低
+* 可读的日志文本，通过操作AOF文件，可处理误操作
+
+### RDB与AOF优劣势
+* 数据完整行：RDB<AOF RDB可能存在未存储到磁盘的数据
+* 恢复速度：RDB>AOF RDB直接回复
+* 磁盘占用：RDB<AOF AOF把写命令都记录下来
+* 内存消耗：RDB>AOF RDB需要两倍内存
+
+两者同时存在时：优先权 AOF>RDB，因为AOF完整性更好
+
+使用建议：
+* 两个都启用
+* 对于数据完整性不敏感，可单独用RDB
+* 不建议单独用AOF，因为可能会出现Bug
+* 因为RDB文件只用作后备用途，建议只在Slave上持久化RDB文件，而且只要15分钟备份一次就够了，只保留save 900 1这条规则
+* 只要硬盘许可，应该尽量减少AOF rewrite的频率，AOF重写的基础大小默认值64M太小了，可以设到5G以上
+* 默认超过原大小100%大小时重写可以改到适当的数值
