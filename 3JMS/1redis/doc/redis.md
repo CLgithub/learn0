@@ -586,3 +586,30 @@ no-appendfsync-on-rewrite yes/no   # 在重写时，不同步aof_buf到appendonl
 2. master接收到命令，启动后台的存盘进程(RDB)，同时收集所有接收到的用于修改数据集的命令，后台进程执行完毕后，将整改数据文件发送给slave，完成一次完全同步
 3. slave接收到文件，加载进内存
 <img src='./images/12.png'>
+
+## Redis集群
+* 怎么玩
+    * 一份redis.conf文件，关闭AOF
+    * 多分redis_xxx.conf文件，文件中
+        ```
+        include /myredis/redis.conf # 导入同一份redis.conf
+        pidfile /var/run/redis_xxx.pid  # 定义自己的pid文件
+        prot xxx    # 定义自己的端口
+        dbfilename dumpxxx.rdb  # 定义自己的rdb文件
+        cluster-enabled yes # 开启集群模式
+        cluster-config-file nodes-xxx.conf # 集群节点配置文件名
+        cluster-node-timeout 15000 # 节点失联时间
+        ```
+    * 分别启动各个节点
+    * 创建集群
+        ```
+        /opt/redis-6.2.1/src/redis-cli --cluster create --cluster-replicas 1 nodeIp1:6379 nodeIp2:6379 ...
+        # 其中的1表示以最简单的方式组合集群
+        # 创建集群后，共有16384个插槽
+        ```
+    * 连接集群
+        ```
+        > redis-cli -p 6379 # 连接单机
+        > redis-cli -c -p 6379 # 连接集群
+        > cluster nodes # 查看集群信息，一个集群中，至少有3个主节点
+        ```
