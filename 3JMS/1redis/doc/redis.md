@@ -588,6 +588,7 @@ no-appendfsync-on-rewrite yes/no   # 在重写时，不同步aof_buf到appendonl
 <img src='./images/12.png'>
 
 ## Redis集群
+多个主从复制和在一起
 * 怎么玩
     * 一份redis.conf文件，关闭AOF
     * 多分redis_xxx.conf文件，文件中
@@ -613,3 +614,21 @@ no-appendfsync-on-rewrite yes/no   # 在重写时，不同步aof_buf到appendonl
         > redis-cli -c -p 6379 # 连接集群
         > cluster nodes # 查看集群信息，一个集群中，至少有3个主节点
         ```
+创建集群后，共有16384个插槽，集群中各个主节点，平分这16384个插槽
+<img src='./images/13.png'>
+插入一个数据时，集群使用一个公式来计算键key属于哪个槽，放到对应的节点上
+一次设置多个数据时，会报错，因为不同的key在位于不同的节点，需要进行分组，才能存放
+```
+mset k1{cust} v1 k2{cust} v2 k3{cust} v3
+```
+<img src='./images/14.png'>
+
+```
+192.168.3.215:6379> cluster keyslot cust  # 计算cust这组在哪个插槽
+192.168.3.215:6379> cluster countkeysinslot 4847 # 查看4847这个插槽上的数据量，必须在对应的节点上执行才有效
+192.168.3.215:6379> cluster getkeysinslot 4847 10 # 获取在4847插槽上的key，必须在对应的节点上执行
+```
+
+* 故障恢复
+    * 主节点挂掉后，他的从节点顶上，成为主节点
+    * 主从都挂掉，看`cluster-require-full-coverage yes`，整个集群都挂掉，`no`该节点对应的插槽不能使用
