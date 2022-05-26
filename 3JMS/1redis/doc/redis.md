@@ -685,3 +685,30 @@ mset k1{cust} v1 k2{cust} v2 k3{cust} v3
 * 不会发生死锁。即使有一个客户端在持有锁的期间崩溃而没有主动解锁，也能保证后续其他客户端能加锁
 * 解铃还须系铃人。加锁和解锁必须是同一个客户端，客户端自己不能把别人加的锁给解了
 * 加锁和解锁必须具有原子性
+
+## Redis 6新特性
+### ACl
+Access Control List（访问控制列表）
+作用户权限用
+```
+xxx:6379> acl list
+1) "user default on nopass ~* &* +@all"
+# default 用户名
+# on/off 启用/禁用
+# nopass 没有密码
+# ~* 可操作的key为任意key
+# +@all 可执行的命令为全部命令
+
+xxx:6379> acl whoami    # 查看当前用户
+
+xxx:6379> acl cat   # 查看操作命令
+
+xxx:6379> acl cat string  # 查看对于string的操作命令
+
+xxx:6379> acl setuser user2 on >12345 ~* +get
+# 创建一个用户user2 启用 密码12345 任意key get命令
+xxx:6379> auth user2 # 切换至user2命令
+```
+
+### IO多线程
+IO多线程其实指客户端交互部分的网络IO交互处理模块多线程，而非执行命令多线程。Redis6执行命令依然是单线程
