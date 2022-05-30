@@ -26,8 +26,8 @@ flushall				# 通杀全部库
 * 字符串（String）
 * 列表（List）
 * 集合（Set）
-* 哈希（Hash）
 * 有序集合（Zset）
+* 哈希表（Hash）
 * BitMaps（位map）
 * HyperLogLog
 * GeoSpatial
@@ -166,33 +166,6 @@ set数据结构是dict字典，字典是哈希表实现的
 
 
 
-### 哈希（Hash）
-
-#### 简介
-
-redis hash是一个键值对集合，类似java中的map
-
-redis hash是一个string类型的field和value的映射表，hash特别适合用于存储对象，如key=user1，value={id=1,name=tom,age=20}，Map<Sting,Object>
-
-#### 常用命令
-
-```
-hset <key><field><value> 	# 给指定key集合中的field键赋值value
-hget <key><field>				# 获取key中field的值
-hmset <key><field1><value1><field2><value2>...		# 批量设置
-hexists <key><field1> # 查看key中field1是否存在
-hkeys <key>						# 列出key中的所有field
-hvals <key>						# 列出key中的所有value
-
-hincrby <key><field><increment>		# 为key中的field的值，增加increment
-hsetnx <key><field><value>				# 给指定key集合中的field键赋值value,仅当field不存在时
-```
-
-#### 数据结构
-
-当数据少时，用ziplist，当数据多时，用hashTable
-
-
 
 ### 有序集合（Zset）sorted set
 
@@ -220,6 +193,34 @@ zrank <key><value>									# 返回该值在集合中的排名，从0开始
 存储方式类似hash方式，一个key，value中是多个键值对，但是排序会根据得分
 
 采用跳跃表，能更高效的查找数据，但具体如何跳跃？
+
+### 哈希表（Hash）
+
+#### 简介
+
+redis hash是一个键值对集合，类似java中的map
+
+redis hash是一个string类型的field和value的映射表，hash特别适合用于存储对象，如key=user1，value={id=1,name=tom,age=20}，Map<Sting,Object>
+
+#### 常用命令
+
+```
+hset <key><field><value> 	# 给指定key集合中的field键赋值value
+hget <key><field>				# 获取key中field的值
+hmset <key><field1><value1><field2><value2>...		# 批量设置
+hexists <key><field1> # 查看key中field1是否存在
+hkeys <key>						# 列出key中的所有field
+hvals <key>						# 列出key中的所有value
+
+hincrby <key><field><increment>		# 为key中的field的值，增加increment
+hsetnx <key><field><value>				# 给指定key集合中的field键赋值value,仅当field不存在时
+```
+
+#### 数据结构
+
+当数据少时，用ziplist，当数据多时，用hashTable
+
+
 
 
 
@@ -449,9 +450,13 @@ save s c                # 开启自动RDB，s秒内，若数据修改次数超�
 > lastsave    # 获取最后一次成功写入快照时间
 > flushall    # 会清空dump.rdb文件
 ```
+rdb自动触发情况：
+1. 满足`save m n`情况，在n秒内变化m次
+2. 执行`flushall`命令
+3. 主从同步（bgsave）
 
 
-* rdb的备份
+rdb的备份
 当redis启动时，会读取dump.rdb文件到内存中
 
 
@@ -582,10 +587,19 @@ no-appendfsync-on-rewrite yes/no   # 在重写时，不同步aof_buf到appendonl
             ```
 
 ### 主从复制原理
-1. slave启动成功连接到master后，会发送一个sync命令
-2. master接收到命令，启动后台的存盘进程(RDB)，同时收集所有接收到的用于修改数据集的命令，后台进程执行完毕后，将整改数据文件发送给slave，完成一次完全同步
-3. slave接收到文件，加载进内存
-<img src='./images/12.png'>
+通过执行`slaveof`命令或设置`slaveof`选项，让一个服务器去复制另一个服务器的数据。主数据库可以读写，当写操作导致数据变化时自动将数据同步给从数据库，而从数据库一般时只读，数据来源于同步主数据库，一个主数据库可以拥有多个从数据库，而一个从数据库只能有一个主数据库
+* 全量复制：
+    1. 主节点通过`bgsave`命令fork子进程进行RDB持久化，该过程非常消耗CPU、内存、磁盘IO
+    2. 主节点通过网络将RDB文件送给从节点，对主从节点的带宽都会带来很大消耗
+    3. 从节点情况老数据，载入新RDB文件的过程时阻塞的，无法相应客户端的命令，如果从节点执行`bgrewrieaof`，也会带来额外的消耗
+* 部分复制
+    1. 复制偏移量：执行复制的双方，主从节点，分别会维护一个复制偏移量`offset`
+    2. 复制积压缓冲区：主节点内部维护了一个固定长度的、先进先出队列，作为复制积压缓冲区，部分同步时只需要同步缓冲区，当主从`offset`的差距过大超过缓冲区长度时，将无法执行部分复制，只能执行量复制
+    3. 服务器运行id（runid）：每个redis节点，都有其运行id，主节点将自己的id发送给从节点，从节点将主节点id存起来，从节点断开重连的时候，就是根据运行id来判断同步进度：
+        1. 如果从节点保存的runid与现主节点的runid相同，说明主从节点之前同步过，将继续尝试部分复制（到底是不是部分复制，需要看`offset`和复制积压缓冲区的情况）
+        2. 如果不相同，说明主节点发生变化，需要进行全量复制
+
+<img src='./images/15.png'>
 
 ## Redis集群
 多个主从复制和在一起
@@ -628,7 +642,7 @@ mset k1{cust} v1 k2{cust} v2 k3{cust} v3
 192.168.3.215:6379> cluster countkeysinslot 4847 # 查看4847这个插槽上的数据量，必须在对应的节点上执行才有效
 192.168.3.215:6379> cluster getkeysinslot 4847 10 # 获取在4847插槽上的key，必须在对应的节点上执行
 ```
-
+* 每个节点上开放两个端口`6379`和`16379`，`16379`用于节点间通信
 * 故障恢复
     * 主节点挂掉后，他的从节点顶上，成为主节点
     * 主从都挂掉，看`cluster-require-full-coverage yes`，整个集群都挂掉，`no`该节点对应的插槽不能使用
@@ -677,6 +691,7 @@ mset k1{cust} v1 k2{cust} v2 k3{cust} v3
 > ttl k         # 查看过期时间
 > # 但上锁和设置过期时间并非原子性操作
 > set k v nx ex 10  # 上锁的同时，加上过期时间为10s
+> set k v nx px 10  # 上锁的同时，加上过期时间为10ms
 ```
 [查看案例](../RedisDemo2/)
 
@@ -712,3 +727,73 @@ xxx:6379> auth user2 # 切换至user2命令
 
 ### IO多线程
 IO多线程其实指客户端交互部分的网络IO交互处理模块多线程，而非执行命令多线程。Redis6执行命令依然是单线程
+
+## 部分面试题
+* redis单线程为什么这么快
+    * 它是在内存中的，不需要磁盘IO交互
+    * 单线程反而避免了多线程的频繁上下文切换带来的性能问题
+    * 核心是基于非阻塞的 **IO多路复用** 机制
+        * IO多路复用
+            * 文件事件处理器分为4个部分：多个socker、io多路复用程序、文件事件分发器、事件处理器
+            * 多个socket可能并发产生不同事件，IO多路复用程序，会监听多个socket，将多个socket放入一个队列中排队，每次从其中有序、同步？的取出一个socket给分派器，分派器把socakt交给对应的事件处理器处理
+            * 然后下一个soket
+
+* 简述redis分布式锁实现
+    * setnx+setex
+    ```
+    > set k v nx ex 10  # 上锁的同时，加上过期时间为10s
+    ```
+* redis 持久化机制
+    * RDB，某一时刻的内存快照，存入磁盘
+        * 手动触发
+            * save命令，阻塞
+            * bgsave命令，fork出一个子进程，只有fork过程会有短暂阻塞
+        * 自动触发
+            * 配置文件中`save m n` 在m秒内，若有n次键发生变化，就通过bgsave存储
+            * `flushall`，清空所有redis数据库，`flushdb`同时也会清空dump.rdb内容
+            * 主从同步，全量同步会自动触发`bgsave`，生产rdb文件发送给从节点
+        * 优缺点：
+            * 只有一个dump.rdb 方便持久化
+            * 容宅性好，方便备份
+            * 性能最大化
+            * 相对于数据集大时，比AOF的启动效率更高
+            * 数据安全性低，rdb间隔期间可能会丢失
+            * fork子进程时，服务会停止几百毫秒
+    * AOF，写操作追加append到文件，先写到内存缓冲区，再根据策略写到磁盘
+        * AOF文件增大，需要对AOF文件进行重写，以达到压缩的目的
+        * 同步策略`appendsync`：
+            * 每秒同步：异步完成效率非常高
+            * 没修改同步：同步持久化
+            * 不同步：由操作系统控制，可能丢失较多数据
+        * 优缺点：
+            * 数据安全
+            * 通过append模式写入，可以`redis-check-aof`工具进行修复
+            * 可进行重写压缩
+            * AOF恢复RDB恢复慢
+            * 数据集大时，比RDB效率低
+            * 运行效率没有RDB高
+
+* redis的过期键的删除策略
+    * 惰性过期：只有当访问一个key时，才会判断该key是否过期，节约cpu，耗内存
+    * 定时过期
+    * 定期过期：每隔一定的时间，会扫描一定数量的数据库的expires字典中一定数量的key，并清楚其中已经过期的key
+    （expires字典会保存所有设置了过期时间的key的过期时间数据，其中，key时只想键空间中的某个键的指针，value时该键的毫秒精度的UNIX时间戳表示的过期时间。键空间是指redis集群中保存的所有键）
+    redis中同时使用了惰性过期和定期过期
+    
+* redis集群方案
+    * 主从
+        * 哨兵模式
+    * redis cluster，16384个槽，服务端分片
+    * redis sharding，客户端分片
+
+* redis有哪些数据结构？分别对应哪些应用场景
+    1、字符串：最简单的数据缓存，可实现计数器，session共享，分布式ID等
+    2、列表：单键多值，可用来缓存类似微信公众号，微博等消息流数据
+    3、集合：无序不重复，实现我和某人共同关注的人，朋友圈点赞
+    4、有序集合：zshe，有序不可重复的集合，序列是按每个元素所关联的分数进行排序，实现排行榜
+    5、哈希表：redis hash是一个键值对集合，类似java中的map，存储对象
+    
+* redis主从复制核心原理
+<img src='./images/15.png'>
+    
+
