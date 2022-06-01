@@ -42,3 +42,39 @@
      * 发布者和订阅者之间有时间上的依赖性。针对某个主题（Topic）的订阅者，它必须创建一个订阅者之后，才能消费发布者的消息
      * 为了消费消息，订阅者需要提前订阅该角色主题，并保持在线运行
 
+# zookeeper
+提供分布式协同服务
+```
+# 修改conf/zoo_sample.cfg文件名为zoo.cfg，并进行相关配置
+bin/zkServer.sh start #启动
+bin/zkCli.sh -server 127.0.0.1:2181 # 连接到zk服务
+连接到服务后
+> ls /  # 查看更目录节点
+> create /zk_test my_data   # 创建节点/zk_test
+> get /zk_test # 获取/zk_test节点的数据
+```
+# kafka
+apache kafka是一个分布式流平台，一个分布式的流平台应该包含3点关键的能力
+* **发布和订阅** 流数据流，类似于消息队列或者是企业消息传递系统
+* 以容错的持久化方式 **存储** 数据流
+    * 和为容错的持久化方式？
+* **处理** 数据流
+发布与订阅、存储、处理
+
+[官方快速启动案例](https://kafka.apache.org/quickstart)
+```
+# 主题类似于文件系统中的文件夹，事件是该文件夹中的文件
+# 创建一个主题 quickstart-events
+./kafka-topics.sh --create --topic quickstart-events --bootstrap-server localhost:9092
+# 查看主题
+./kafka-topics.sh --describe --topic quickstart-events --bootstrap-server localhost:9092
+
+# 在主题中写下一些事件
+# kafka客户端通过网络与kafka brokers通信，一旦收到事件，brokers将以持久和容错的方式存储事件
+./kafka-console-producer.sh --topic quickstart-events --bootstrap-server localhost:9092
+> 这是第一个事件
+
+# 接收事件
+./kafka-console-consumer.sh --topic quickstart-events --from-beginning --bootstrap-server localhost:9092
+```
+
