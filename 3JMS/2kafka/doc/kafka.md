@@ -53,6 +53,15 @@ bin/zkCli.sh -server 127.0.0.1:2181 # 连接到zk服务
 > create /zk_test my_data   # 创建节点/zk_test
 > get /zk_test # 获取/zk_test节点的数据
 ```
+搭建zk集群
+* zoo.conf文件中，需要添加    
+    ```
+    server.1=vUbuntu1:2888:3888
+    server.2=vUbuntu2:2888:3888
+    server.3=vUbuntu3:2888:3888
+    ```
+* data目录下添加各种的`myid` 
+
 # kafka
 apache kafka是一个分布式流平台，一个分布式的流平台应该包含3点关键的能力
 * **发布和订阅** 流数据流，类似于消息队列或者是企业消息传递系统
@@ -64,17 +73,60 @@ apache kafka是一个分布式流平台，一个分布式的流平台应该包�
 [官方快速启动案例](https://kafka.apache.org/quickstart)
 ```
 # 主题类似于文件系统中的文件夹，事件是该文件夹中的文件
-# 创建一个主题 quickstart-events
-./kafka-topics.sh --create --topic quickstart-events --bootstrap-server localhost:9092
+# 创建一个主题 topic1
+./kafka-topics.sh --create --topic topic1 --bootstrap-server localhost:9092
 # 查看主题
-./kafka-topics.sh --describe --topic quickstart-events --bootstrap-server localhost:9092
+./kafka-topics.sh --describe --topic topic1 --bootstrap-server localhost:9092
 
 # 在主题中写下一些事件
 # kafka客户端通过网络与kafka brokers通信，一旦收到事件，brokers将以持久和容错的方式存储事件
-./kafka-console-producer.sh --topic quickstart-events --bootstrap-server localhost:9092
+./kafka-console-producer.sh --topic topic1 --bootstrap-server localhost:9092
 > 这是第一个事件
 
 # 接收事件
-./kafka-console-consumer.sh --topic quickstart-events --from-beginning --bootstrap-server localhost:9092
+./kafka-console-consumer.sh --topic topic1 --from-beginning --bootstrap-server localhost:9092
 ```
 
+集群搭建
+* 先搭建zk集群
+* server.properties文件配置
+    * 不同的`broker.id`
+    * `log.dirs`
+    * `zookeeper.connect`
+* 分别在每个节点启动，与单机启动方式相同
+    * 启动zk
+        ```
+        nohup ./zookeeper-server-start.sh ../config/zookeeper.properties >/dev/null &
+        ```
+    * 启动kafka
+        ```
+        nohup ./kafka-server-start.sh ../config/server.properties >/dev/null &
+        ```
+* 查看集群topic
+    ```
+    ./kafka-topics.sh --bootstrap-server vUbuntu1:9092 --list
+    ```
+一键启停
+* 启动脚本
+    ```
+    cat /home/l/develop/kafka_2.13-3.2.0/slave | while read line
+    do
+    {
+     echo $line
+     ssh $line "export JMX_PORT=9988;nohup /home/l/develop/kafka_2.13-3.2.0/bin/kafka-server-start.sh /home/l/develop/kafka_2.13-3.2.0/config/server.properties >/dev/nul* 2>&1 & "
+    }&
+    wait
+    done
+    ```
+* 停止脚本
+    ```
+    cat /home/l/develop/kafka_2.13-3.2.0/slave | while read line
+    do
+    {
+     echo $line
+     ssh $line "jps |grep Kafka |cut -d ' ' -f1 |xargs kill -s 9"
+    }&
+    wait
+    done 
+    ```
+利用[CMAK](https://github.com/yahoo/CMAK) 对集群进行管理
