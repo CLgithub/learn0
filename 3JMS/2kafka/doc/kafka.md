@@ -167,3 +167,8 @@ unset JMX_PORT;
             每秒的数量nMsg.sec：6900.7808条
             <img src='./images/10.png'>
     
+各组件分区：
+* redis：slot
+* kafka：partition
+* es：shard
+* hbase：region
