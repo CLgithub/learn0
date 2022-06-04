@@ -172,3 +172,40 @@ unset JMX_PORT;
 * kafka：partition
 * es：shard
 * hbase：region
+
+## 架构
+<img src='./images/12.png'>
+
+### 基本概念
+* broker（相当于节点）
+    * 一个Kafka的集群通常由多个broker组成，这样才能实现负载均衡、以及容错
+    * broker是无状态（Sateless）的，它们是通过ZooKeeper来维护集群状态
+    * 一个Kafka的broker每秒可以处理数十万次读写，每个broker都可以处理TB消息而不影响性能
+* zk
+    * zk用来管理和协调broker，并存储了kafka的元数据（如：多少个topic、partition、consumer）
+    * zk服务主要用于通知生产者和消费者kafka集群中有新的broker加入、broker故障
+* topic（主题）
+    * 主题要有标识符，而且是唯一的，kafka中可以有任意数量主题，没有数量上限
+    * 在主题中的消息是有结构的，一般一个主题包含某一类消息
+    * 一旦生产者发送消息到主题中，这些消息就不能被更新（更改）
+* partition（分区）
+    * 一个主题可被分为多个分区
+* replicas（副本）
+    * 一份数据的两份保存
+    * kafka中一般会设计多个副本
+* offset（偏移量）
+    * offset记录着下一条将要发送给Consumer的消息的序号
+    * 默认Kafka将offset存储在ZooKeeper中
+    * 在一个分区中，消息是有顺序的方式存储着，每个在分区的消费都是有一个递增的id。这个就是偏移量offset
+    * 偏移量在分区中才是有意义的。在分区之间，offset是没有任何意义的
+* producer（生产者）
+    * 数据提供者
+* consumer（消费者）
+    * 数据获取者
+* consumer gruip（消费者组）
+    * 一种机制：可扩展且具有容错性的消费者机制
+    * 一个消费者组可包含多个消费者
+    * 一个消费者组有一个唯一ID（group id）
+    * 组内的消费者一起消费主题的所有分区数据
+
+
