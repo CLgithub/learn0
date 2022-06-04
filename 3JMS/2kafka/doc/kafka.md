@@ -80,24 +80,21 @@ apache kafka是一个分布式流平台，一个分布式的流平台应该包�
 
 # 在主题中写下一些事件
 # kafka客户端通过网络与kafka brokers通信，一旦收到事件，brokers将以持久和容错的方式存储事件
-./kafka-console-producer.sh --topic topic1 --bootstrap-server localhost:9092
+./kafka-console-producer.sh --bootstrap-server localhost:9092 --topic topic1
 > 这是第一个事件
 
 # 接收事件
-./kafka-console-consumer.sh --topic topic1 --from-beginning --bootstrap-server localhost:9092
+./kafka-console-consumer.sh --from-beginning --bootstrap-server localhost:9092 --topic topic1
 ```
 
-集群搭建
+## 集群搭建
 * 先搭建zk集群
 * server.properties文件配置
     * 不同的`broker.id`
     * `log.dirs`
     * `zookeeper.connect`
 * 分别在每个节点启动，与单机启动方式相同
-    * 启动zk
-        ```
-        nohup ./zookeeper-server-start.sh ../config/zookeeper.properties >/dev/null &
-        ```
+    * 启动zk集群
     * 启动kafka
         ```
         nohup ./kafka-server-start.sh ../config/server.properties >/dev/null &
@@ -130,3 +127,43 @@ apache kafka是一个分布式流平台，一个分布式的流平台应该包�
     done 
     ```
 利用[CMAK](https://github.com/yahoo/CMAK) 对集群进行管理
+<img src="./images/8.png">
+使用命令管理topic，若报错`java.rmi.server.ExportException: Port already in use: 9988`可在命令前尝试加上
+```
+unset JMX_PORT;
+```
+
+## 基准测试
+基准测试（benchmark testing）是一种测量和评估软件性能指标的活动。我们可以通过基准测试，了解到软件、硬件的性能水平。主要测试负载的执行时间、传输速度、吞吐量、资源占用率等
+* 测试步骤：
+    1. 启动集群
+    2. 创建一个1分区1副本的`topic bencmark`
+        ```
+        ./kafka-topics.sh --create --topic benchmark --partitions 1 --replication-factor 1
+        ```
+    3. 生产者测试程序
+        ```
+        ./kafka-producer-perf-test.sh --topic benchmark --num-records 500000 --throughput -1 --record-size 1000 --producer-props bootstrap.servers=vUbuntu1:9092,vUbuntu2:9092,vUbuntu3:9092 acks=1
+        
+        --num-records 500000 总共指定生产数据量50W条（默认5000W）
+        --throughput -1	指定吞吐量——限流（-1不指定）
+        --record-size 1000 记录数据大小（字节）
+        --producer-props 指定集群，ACK模式
+        ```
+        * 结果：50W条数据，平均每秒发送11701.928478条（11.16M/s），平均延时2618.14 ms，最大延时5437.00 ms
+            <img src='./images/9.png'>
+    4. 消费者测试程序
+        ```
+        ./kafka-consumer-perf-test.sh --broker-list vUbuntu1:9092,vUbuntu2:9092,vUbuntu3:9092 --topic benchmark --fetch-size 1048576 --messages 5000000
+        
+        --fetch-size 每次拉取的数据大小
+        --messages 总共要消费的消息条数
+        ```
+        * 结果：
+            50W条数据
+            共计消费的数据data.consumed.in.MB：477.0374M
+            每秒消费的数量MB.sec：6.5811M
+            共计消费的数量data.consumed.in.nMsg：500210条
+            每秒的数量nMsg.sec：6900.7808条
+            <img src='./images/10.png'>
+    
