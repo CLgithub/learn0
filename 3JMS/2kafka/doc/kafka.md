@@ -208,4 +208,17 @@ unset JMX_PORT;
     * 一个消费者组有一个唯一ID（group id）
     * 组内的消费者一起消费主题的所有分区数据
 
+## kafka幂等性
+幂等性：若某个系统在用户执行多次重复请求或提交后，与执行一次提交，对其影响是一样的，该系统就具有幂等性
+kafka中，在生产者生产消息时，如果出现retry时，有可能会一条消息被发送了多次，如果Kafka不具备幂等性的，就有可能会在partition中保存多条一模一样的消息
+kafka配置幂等性
+```
+props.put("enable.idempotence",true);
+```
+kafka幂等性原理：
+* 为每个生产者设置唯一编号ProducerID
+* 为某一生产者发送到指定主题分区的消息设置从0自增的`Sequence Number`
+* 当kafka收到消息时，会判断ProducerID在指定主题上消息的`Sequence Number`，若相同或小于`Sequence Number`，则不存储
+
+👻：如何演示？
 

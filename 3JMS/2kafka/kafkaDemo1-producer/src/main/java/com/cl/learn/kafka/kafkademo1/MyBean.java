@@ -85,16 +85,34 @@ public class MyBean implements CommandLineRunner {
         kafkaTemplate.setConsumerFactory(consumerFactory);
 
         // 接收指定topic，指定分区，指定偏移量的数据
-        ConsumerRecord<String, String> consumerRecord = kafkaTemplate.receive(topic, 0, 1);
-        System.out.println("成功接收到到："+"topic="+consumerRecord.topic()+",partition="+consumerRecord.partition()+",offset="+consumerRecord.offset()+",value="+consumerRecord.value());
+////        ConsumerRecord<String, String> consumerRecord = kafkaTemplate.receive(topic, 0, 1);
+//        System.out.println("成功接收到到："+"topic="+consumerRecord.topic()+",partition="+consumerRecord.partition()+",offset="+consumerRecord.offset()+",value="+consumerRecord.value());
+        for(int i=0;i<2;i++){
+            for(int j=0;j<9;j++){
+                ConsumerRecord<String, String> consumerRecord = kafkaTemplate.receive(topic, i, j);
+                System.out.println("成功接收到到："+"topic="+consumerRecord.topic()+",partition="+consumerRecord.partition()+",offset="+consumerRecord.offset()+",value="+consumerRecord.value());
+            }
+        }
     }
 
 
-//    // 监听该topic的消息，默认分区
-//    @KafkaListener(topics = "topic1" )
-//    public void listen1(String content){
-//        System.out.println("接收到消息："+content);
-//    }
+    // 监听该topic的消息，默认分区
+    @KafkaListener(topics = "topic1" )
+    public void listen1(String content){
+        System.out.println("1接收到消息："+content);
+    }
+
+    // 监听该topic的消息，默认分区
+    @KafkaListener(topics = "topic1" )
+    public void listen2(String content){
+        System.out.println("2接收到消息："+content);
+    }
+
+    // 监听该topic的消息，默认分区
+    @KafkaListener(topics = "topic1" )
+    public void listen3(String content){
+        System.out.println("3接收到消息："+content);
+    }
 
 
 }
