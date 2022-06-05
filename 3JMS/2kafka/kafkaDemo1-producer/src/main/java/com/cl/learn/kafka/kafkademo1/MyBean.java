@@ -1,23 +1,30 @@
 package com.cl.learn.kafka.kafkademo1;
 
-import jdk.management.resource.internal.inst.SocketOutputStreamRMHooks;
+import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.PartitionInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Properties;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.function.BiConsumer;
 
 /**
  * @Author l
@@ -28,21 +35,66 @@ public class MyBean implements CommandLineRunner {
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
+    @Autowired
+    private ConsumerFactory consumerFactory;
 
-    public String topic="topic1";
+    @Autowired
+    private KafkaProConsu kafkaProConsu;
+
+    public static String topic="topic1";
+
+    SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 
     @Override
     public void run(String... args) throws Exception {
-        SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        // 同步发送消息
-        ListenableFuture<SendResult<String, String>> topic1 = kafkaTemplate.send(topic, simpleDateFormat.format(new Date()));
+//        kafkaProConsu.testSend1();
+//        kafkaProConsu.testSend2();
+//        kafkaProConsu.testReceive();
+//        testSend1_template();
+        testReceive1_template();
     }
 
-    @KafkaListener(topics = "topic1")
-    public void processMessage(String content){
-        System.out.println("接收到消息："+content);
+
+    // 同步向kafka发送消息
+    public void testSend1_template() throws ExecutionException, InterruptedException {
+        ListenableFuture<SendResult<String, String>> listenableFuture = kafkaTemplate.send(topic, sdf.format(new Date()));
+        SendResult<String, String> sendResult = listenableFuture.get();
+        RecordMetadata recordMetadata = sendResult.getRecordMetadata();
+        System.out.println("成功写入到："+"topic="+recordMetadata.topic()+",partition="+recordMetadata.partition()+",offset="+recordMetadata.offset());
     }
+
+    // 接收指定topic，指定分区，指定偏移量的数据
+    public void testReceive1_template() throws ExecutionException, InterruptedException {
+        Consumer consumer = consumerFactory.createConsumer();
+        Map<String, List<PartitionInfo>> map = consumer.listTopics();
+        Set<Map.Entry<String, List<PartitionInfo>>> entries = map.entrySet();
+        System.out.println("--------------------");
+        for(Iterator<Map.Entry<String, List<PartitionInfo>>> iterator = entries.iterator();iterator.hasNext();){
+            Map.Entry<String, List<PartitionInfo>> entry= iterator.next();
+            String key = entry.getKey();
+            System.out.println("----"+key);
+            if(!"__consumer_offsets".equals(key)){
+                for (PartitionInfo partitionInfo : entry.getValue()) {
+                    System.out.println(partitionInfo);
+                }
+            }
+        }
+        System.out.println("--------------------");
+
+        kafkaTemplate.setConsumerFactory(consumerFactory);
+
+        // 接收指定topic，指定分区，指定偏移量的数据
+        ConsumerRecord<String, String> consumerRecord = kafkaTemplate.receive(topic, 0, 1);
+        System.out.println("成功接收到到："+"topic="+consumerRecord.topic()+",partition="+consumerRecord.partition()+",offset="+consumerRecord.offset()+",value="+consumerRecord.value());
+    }
+
+
+//    // 监听该topic的消息，默认分区
+//    @KafkaListener(topics = "topic1" )
+//    public void listen1(String content){
+//        System.out.println("接收到消息："+content);
+//    }
 
 
 }
