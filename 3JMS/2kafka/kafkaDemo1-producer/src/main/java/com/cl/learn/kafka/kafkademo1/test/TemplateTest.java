@@ -1,12 +1,8 @@
-package com.cl.learn.kafka.kafkademo1;
+package com.cl.learn.kafka.kafkademo1.test;
 
+import com.cl.learn.kafka.kafkademo1.test.KafkaProConsu;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.PartitionInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,20 +14,16 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 
-import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.function.BiConsumer;
 
 /**
  * @Author l
  * @Date 2022/6/4 13:38
  */
 @Component
-public class MyBean implements CommandLineRunner {
+public class TemplateTest implements CommandLineRunner {
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;

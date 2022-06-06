@@ -1,15 +1,16 @@
-package com.cl.learn.kafka.kafkademo1;
+package com.cl.learn.kafka.kafkademo1.test;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.clients.producer.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.Arrays;
@@ -28,23 +29,26 @@ public class KafkaProConsu {
     SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
-    private KafkaProducer kafkaProducer;
+    private KafkaProducer producer;
+
     @Autowired
     private KafkaConsumer kafkaConsumer;
+
 
 
     // 同步向kafka发送
     public void testSend1() throws ExecutionException, InterruptedException {
         ProducerRecord<Object, Object> producerRecord= new ProducerRecord<Object,Object>(topic, null, sdf.format(new Date()));
-        Future<RecordMetadata> future= kafkaProducer.send(producerRecord);
+        Future<RecordMetadata> future= producer.send(producerRecord);
         RecordMetadata recordMetadata = future.get();
         System.out.println("成功写入到："+"topic="+recordMetadata.topic()+",partition="+recordMetadata.partition()+",offset="+recordMetadata.offset());
     }
 
     // 异步向kafka写入
     public void testSend2() throws ExecutionException, InterruptedException {
+
         ProducerRecord<Object, Object> producerRecord= new ProducerRecord<Object,Object>(topic, null, sdf.format(new Date()));
-        Future<RecordMetadata> future= kafkaProducer.send(producerRecord, new Callback() {
+        Future<RecordMetadata> future= producer.send(producerRecord, new Callback() {
             @Override
             public void onCompletion(RecordMetadata recordMetadata, Exception exception) {
                 if(exception == null){ // 发送成功
