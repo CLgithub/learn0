@@ -252,8 +252,23 @@ kafka幂等性原理：
     * 配置`partition.assignment.strategy=org.apache.kafka.clients.consumer.RoundRobinAssignor`
     <img src='./images/14.png'>
 * strick粘性分配策略
-    * 发生rebalance时，使分配尽可能的和上一次保持相同，减少资源开销
+    * 发生rebalance时，使分配尽可能的和上一次保持相同(粘住上一次的分配)，减少资源开销
     * 发生reblance前
     <img src='./images/14.png'>
     * 发生reblance后
     <img src='./images/15.png'>
+    
+## 副本机制
+一份数据，在保存多分，放在不同的Broker上
+生产者写入数据时，ACKs参数设置，ACKs参数设置是性能与可靠性之间的取舍设置
+```
+props.put("acks","all")
+```
+* acks=0，不等broker确认，直接发送下一条数据，性能最高，可靠性最低
+* acks=1，等待broker确认，再发送下一条数据，性能中等，可靠性中等
+* acks=-1/all，等到所有broker上的副本将数据同步后，才能发出下一条数据，性能最低，可靠性最高
+性能可进行基准测试
+```
+./kafka-producer-perf-test.sh --topic benchmark --num-records 50000 --throughput -1 --record-size 1000 --producer-props bootstrap.servers=vUbuntu1:9092,vUbuntu2:9092,vUbuntu3:9092 acks=0/1/-1
+```
+<img src='./images/16.png'>
