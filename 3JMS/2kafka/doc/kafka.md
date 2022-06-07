@@ -223,7 +223,7 @@ kafka幂等性原理：
 👻：如何演示？
 
 ## kafka事务
-## 分区写入策略
+## 生产者分区写入策略
 一个topic，可以有多个分区，写入时可以有以下几种策略
 * 轮询：每个分区消息负载较均衡
     * key=null时，默认使用这张策略
@@ -233,3 +233,27 @@ kafka幂等性原理：
 
 > 乱序问题：同时写入多个分区，就会出现该问题
 
+## 消费者分区分配策略
+* rebalance（再均衡）
+    * Consumer group下所有的consumer如何达成一致，分配订阅的topic的每个分区的机制
+    * 触发条件：
+        * consumer数量发生变化
+        * topic发生变化
+        * topic分区数量发生变化
+    * 不良影响：
+        * 当发生rebalance时，该组的所有消费者停止工作，知道rebalance完成
+
+消费者分区分配策略
+* range范围分配（默认）
+    * 就是平均分配，多出来的（余）分给前面的
+    <img src='./images/13.png'>
+* RoundRobin轮询策略分配
+    * 就是一一映射，不够再映射，直到分区映射完
+    * 配置`partition.assignment.strategy=org.apache.kafka.clients.consumer.RoundRobinAssignor`
+    <img src='./images/14.png'>
+* strick粘性分配策略
+    * 发生rebalance时，使分配尽可能的和上一次保持相同，减少资源开销
+    * 发生reblance前
+    <img src='./images/14.png'>
+    * 发生reblance后
+    <img src='./images/15.png'>
