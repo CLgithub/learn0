@@ -115,6 +115,7 @@ apache kafka是一个分布式流平台，一个分布式的流平台应该包�
     wait
     done
     ```
+    >脚本中的JMX端口9988，JMX（Java Management Extensions）java管理延长，是一个为应用程序 植入管理功能 的框架，实际上，用户可以在任何Java应用程序中使用这些代理和服务实现管理。很多的一些软件都提供了JMX接口，来实现一些管理、监控功能
 * 停止脚本
     ```
     cat /home/l/develop/kafka_2.13-3.2.0/slave | while read line
@@ -127,11 +128,13 @@ apache kafka是一个分布式流平台，一个分布式的流平台应该包�
     done 
     ```
 利用[CMAK](https://github.com/yahoo/CMAK) 对集群进行管理
-<img src="./images/8.png">
-使用命令管理topic，若报错`java.rmi.server.ExportException: Port already in use: 9988`可在命令前尝试加上
-```
-unset JMX_PORT;
-```
+也可以利用[kafka-efak](https://www.kafka-eagle.org/index.html) 对集群进行管理
+<img src="./images/17.png">
+
+* 使用命令管理topic，若报错`java.rmi.server.ExportException: Port already in use: 9988`可在命令前尝试加上
+    ```
+    unset JMX_PORT;
+    ```
 
 ## 基准测试
 基准测试（benchmark testing）是一种测量和评估软件性能指标的活动。我们可以通过基准测试，了解到软件、硬件的性能水平。主要测试负载的执行时间、传输速度、吞吐量、资源占用率等

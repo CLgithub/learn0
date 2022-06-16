@@ -33,7 +33,7 @@ public class TemplateTest implements CommandLineRunner {
     @Autowired
     private KafkaProConsu kafkaProConsu;
 
-    public static String topic="topic1";
+    public static String topic="topic2";
 
     SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
