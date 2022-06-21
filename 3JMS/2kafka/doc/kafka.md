@@ -192,7 +192,7 @@ apache kafka是一个分布式流平台，一个分布式的流平台应该包�
     * 在主题中的消息是有结构的，一般一个主题包含某一类消息
     * 一旦生产者发送消息到主题中，这些消息就不能被更新（更改）
 * partition（分区）
-    * 一个主题可被分为多个分区
+    * 一个主题可被分为多个分区，分区与副本的均存储在`log.dirs`目录中
 * replicas（副本）
     * 一份数据的两份保存
     * kafka中一般会设计多个副本
@@ -275,3 +275,20 @@ props.put("acks","all")
 ./kafka-producer-perf-test.sh --topic benchmark --num-records 50000 --throughput -1 --record-size 1000 --producer-props bootstrap.servers=vUbuntu1:9092,vUbuntu2:9092,vUbuntu3:9092 acks=0/1/-1
 ```
 <img src='./images/16.png'>
+
+## Leader与Follower
+<img src='./images/12.png'>
+<img src='./images/18.png'>
+
+* 分区维度：Leader\Follower
+* broker维度：controller\非controller
+
+* leader负载均衡
+    * Kafka中引入了一个叫做「preferred-replica」的概念，意思就是：优先的Replica
+    * 在ISR列表中，第一个replica就是preferred-replica
+    * 第一个分区存放的broker，肯定就是preferred-replica
+    * 执行以下脚本可以将preferred-replica设置为leader，均匀分配每个分区的leader
+    ```
+    unset JMX_PORT;./kafka-leader-election.sh --bootstrap-server vUbuntu1:9092 --topic topic-2p2r --partition=1 --election-type preferred
+    # partition指定需要重新分配leader的partition编号
+    ```
