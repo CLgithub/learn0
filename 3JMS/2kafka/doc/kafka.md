@@ -292,3 +292,17 @@ props.put("acks","all")
     unset JMX_PORT;./kafka-leader-election.sh --bootstrap-server vUbuntu1:9092 --topic topic-2p2r --partition=1 --election-type preferred
     # partition指定需要重新分配leader的partition编号
     ```
+    
+* 生产、消费数据工作流程
+    * 写入
+        * broker进程上的leader将消息写入到本地log中
+        * follower从leader上拉取消息，写入到本地log，并向leader发送ACK
+        * leader接收到所有的ISR中的Replica的ACK后，并向生产者返回ACK
+    * 消费
+        * 两种消费模式
+            * MQ-->push-->消费者：消息队列记录所有消费者的状态，某一条消息如果被标记为已消费，则消费者不在进行消费
+            * 消费者-->pull-->MQ：消费者自己记录消费状态，每个消费者互相独立地顺序拉取消息
+        * kafka采用拉取模型，由消费者自己记录消费状态，每个消费者互相独立地顺序拉取每个分区的消息
+        * 消费者可以按照任意的顺序消费消息。比如，消费者可以重置到旧的偏移量，重新处理之前已经消费过的消息；或者直接跳到最近的位置，从当前的时刻开始消费
+    * kafka消费数据流程
+    <img src='./images/19.png'>
