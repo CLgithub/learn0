@@ -322,4 +322,19 @@ props.put("acks","all")
     <img src='./images/22.png'>
 * 以偏移量命名可起稀疏索引作用，便于快速查找
     <img src='./images/23.png'>
+
+## 消息删除
+* kafka中，消息会被定期清理，一次删除一个段segment的日志文件
+* kafka日志管理器，会根据kafka的配置，来决定哪些文件可以被删除
+
+## 消息不丢失机制
+* broker数据不丢失
+    * ISR(in sync replicas)中的broker会相互同步
+* 生产者数据不丢失
+    * 写入时，可配置ACK机制
+        * ack=1，不用等节点回应，直接写在一条
+        * ack=0，收到leader节点回应，写下一条
+        * ack=-1/all，等到所有broker上的副本将数据同步后，才能发出下一条数据
+* 消费者数据不丢失
+    * 每个消费者保存好自己的offset值
     
