@@ -285,7 +285,7 @@ props.put("acks","all")
 
 * leader负载均衡
     * Kafka中引入了一个叫做「preferred-replica」的概念，意思就是：优先的Replica
-    * 在ISR列表中，第一个replica就是preferred-replica
+    * 在ISR(in sync replicas)列表中，第一个replica就是preferred-replica
     * 第一个分区存放的broker，肯定就是preferred-replica
     * 执行以下脚本可以将preferred-replica设置为leader，均匀分配每个分区的leader
     ```
@@ -298,6 +298,7 @@ props.put("acks","all")
         * broker进程上的leader将消息写入到本地log中
         * follower从leader上拉取消息，写入到本地log，并向leader发送ACK
         * leader接收到所有的ISR中的Replica的ACK后，并向生产者返回ACK
+        <img src='./images/20.png'>
     * 消费
         * 两种消费模式
             * MQ-->push-->消费者：消息队列记录所有消费者的状态，某一条消息如果被标记为已消费，则消费者不在进行消费
@@ -306,3 +307,19 @@ props.put("acks","all")
         * 消费者可以按照任意的顺序消费消息。比如，消费者可以重置到旧的偏移量，重新处理之前已经消费过的消息；或者直接跳到最近的位置，从当前的时刻开始消费
     * kafka消费数据流程
     <img src='./images/19.png'>
+    
+## kafka的数据存储形式
+* 一个topic分多个分区
+* 一个分区（partition）分多个段（segment）
+* 一个段（segment）分多个文件（.log，.index，.timeindex，leader-epoch-checkpoint）
+    * log日志文件
+    * index偏移量索引
+    * timeindex时间索引
+    * eader-epoch-checkpoint，持久化每个partition leader对应的LEO（log end offset，日志文件中下一条待写入消息的offset）
+    * <img src='./images/21.png'>
+* 每个日志文件名为起始偏移量，默认每个日志(段segment)文件为`log.segment.bytes=1073741824 #1024*1024*1024=1G `
+    * 当设置`log.segment.bytes=4096 #4k`时，每当日志满4k，便另起下一个文件，并以偏移量命名
+    <img src='./images/22.png'>
+* 以偏移量命名可起稀疏索引作用，便于快速查找
+    <img src='./images/23.png'>
+    

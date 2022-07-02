@@ -40,11 +40,14 @@ public class TemplateTest implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-//        kafkaProConsu.testSend1();
+        for(int i=0;i<100;i++){
+            kafkaProConsu.testSend1();
+
+        }
 //        kafkaProConsu.testSend2();
 //        kafkaProConsu.testReceive();
 //        testSend1_template();
-        testReceive1_template();
+//        testReceive1_template();
     }
 
 
