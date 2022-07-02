@@ -337,4 +337,6 @@ props.put("acks","all")
         * ack=-1/all，等到所有broker上的副本将数据同步后，才能发出下一条数据
 * 消费者数据不丢失
     * 每个消费者保存好自己的offset值
-    
+
+## 数据积压
+<img src='./images/24.png'>

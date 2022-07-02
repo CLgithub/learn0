@@ -25,7 +25,7 @@ import java.util.concurrent.Future;
 @Component
 public class KafkaProConsu {
 
-    public static String topic="topic2";
+    public static String topic="topicA";
     SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
@@ -62,7 +62,7 @@ public class KafkaProConsu {
 
     public void testReceive(){
         kafkaConsumer.subscribe(Arrays.asList(topic));
-        ConsumerRecords<String,String> consumerRecords= kafkaConsumer.poll(Duration.ofSeconds(5));
+        ConsumerRecords<String,String> consumerRecords= kafkaConsumer.poll(Duration.ofHours(1));
         for (ConsumerRecord consumerRecord : consumerRecords) {
             System.out.println("成功接收到到："+"topic="+consumerRecord.topic()+",partition="+consumerRecord.partition()+",offset="+consumerRecord.offset()+",value="+consumerRecord.value());
         }

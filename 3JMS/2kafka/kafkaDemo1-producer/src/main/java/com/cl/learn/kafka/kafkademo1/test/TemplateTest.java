@@ -33,17 +33,17 @@ public class TemplateTest implements CommandLineRunner {
     @Autowired
     private KafkaProConsu kafkaProConsu;
 
-    public static String topic="topic2";
+    public static String topic="topicA";
 
     SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 
     @Override
     public void run(String... args) throws Exception {
-        for(int i=0;i<100;i++){
-            kafkaProConsu.testSend1();
-
-        }
+//        while (true){
+//            kafkaProConsu.testSend1();
+//            Thread.sleep(500);
+//        }
 //        kafkaProConsu.testSend2();
 //        kafkaProConsu.testReceive();
 //        testSend1_template();
@@ -91,23 +91,23 @@ public class TemplateTest implements CommandLineRunner {
     }
 
 
-    // 监听该topic的消息，默认分区
-    @KafkaListener(topics = "topic1" )
-    public void listen1(String content){
-        System.out.println("1接收到消息："+content);
-    }
-
-    // 监听该topic的消息，默认分区
-    @KafkaListener(topics = "topic1" )
-    public void listen2(String content){
-        System.out.println("2接收到消息："+content);
-    }
-
-    // 监听该topic的消息，默认分区
-    @KafkaListener(topics = "topic1" )
-    public void listen3(String content){
-        System.out.println("3接收到消息："+content);
-    }
+//    // 监听该topic的消息，默认分区
+//    @KafkaListener(topics = "topicA" )
+//    public void listen1(String content){
+//        System.out.println("1接收到消息："+content);
+//    }
+//
+//    // 监听该topic的消息，默认分区
+//    @KafkaListener(topics = "topicA" )
+//    public void listen2(String content){
+//        System.out.println("2接收到消息："+content);
+//    }
+//
+//    // 监听该topic的消息，默认分区
+//    @KafkaListener(topics = "topicA" )
+//    public void listen3(String content){
+//        System.out.println("3接收到消息："+content);
+//    }
 
 
 }

@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +29,7 @@ import java.util.Random;
  * @Date 2022/6/4 17:44
  */
 @SpringBootConfiguration
+@EnableScheduling
 public class MyConfig {
 
     @Autowired
