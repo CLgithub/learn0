@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for host in vUbuntu1 vUbuntu2 vUbuntu3
+do
+        echo =============== $host ===============
+        ssh $host $1
+done
+
