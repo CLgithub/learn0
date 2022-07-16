@@ -62,10 +62,11 @@ public class Task implements CommandLineRunner {
 
     /**
      * 通过 kafkaProducer 异步发送，并调用回调方法
+     * 使用默认分区规则
      * @param value
      */
     private void test2(String value) {
-        producer.send(new ProducerRecord<>(topic, value), new Callback() {
+        producer.send(new ProducerRecord<>(topic, 2, "", value), new Callback() {
             @Override
             public void onCompletion(RecordMetadata metadata, Exception exception) {
                 if (exception==null){
