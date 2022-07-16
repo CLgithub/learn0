@@ -64,3 +64,7 @@ bin目录下，各部件可通过对应的命令去操作
 ./kafka-topics.sh --bootstrap-server vUbuntu1:9092 --topic topicA --alter --partitions 3
 ```
 * 生产者命令`./kafka-console-producer.sh`
+
+## kafka-生产者
+* 生产者写入数据过程
+<img src='./images/25.png'>
