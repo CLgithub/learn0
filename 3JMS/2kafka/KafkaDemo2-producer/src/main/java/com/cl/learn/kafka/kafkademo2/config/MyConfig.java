@@ -8,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaResourceFactory;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -18,12 +20,23 @@ import java.util.Properties;
  */
 @SpringBootConfiguration
 public class MyConfig {
+
     @Autowired
     private DefaultKafkaProducerFactory defaultKafkaProducerFactory;
 
+
     @Bean
-    public Producer producer(){
-        Producer producer = defaultKafkaProducerFactory.createProducer();
-        return producer;
+    public KafkaProducer kafkaProducer(){
+        Map configurationProperties = defaultKafkaProducerFactory.getConfigurationProperties(); // 获取读取到的配置
+
+        HashMap<String, Object> map= new HashMap<>();
+        map.putAll(configurationProperties); // 由于DefaultKafkaProducerFactory 中，配置map是final的，所以需要复制一份
+        map.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, MyPartitioner.class.getName());  // 添加自定义分区气
+
+//        Producer producer = defaultKafkaProducerFactory.createProducer();
+        KafkaProducer kafkaProducer = new KafkaProducer<>(map);
+        return kafkaProducer;
     }
+
+
 }

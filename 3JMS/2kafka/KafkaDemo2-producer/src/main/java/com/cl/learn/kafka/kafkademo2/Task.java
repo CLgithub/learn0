@@ -29,7 +29,7 @@ public class Task implements CommandLineRunner {
     private KafkaTemplate<String,String> kafkaTemplate;
 
     @Autowired
-    private Producer producer;
+    private KafkaProducer kafkaProducer;
 
 
     @Value("${topic}")
@@ -66,7 +66,7 @@ public class Task implements CommandLineRunner {
      * @param value
      */
     private void test2(String value) {
-        producer.send(new ProducerRecord<>(topic, 2, "", value), new Callback() {
+        kafkaProducer.send(new ProducerRecord<>(topic, value), new Callback() {
             @Override
             public void onCompletion(RecordMetadata metadata, Exception exception) {
                 if (exception==null){
