@@ -66,40 +66,47 @@ bin目录下，各部件可通过对应的命令去操作
 * 生产者命令`./kafka-console-producer.sh`
 
 ## kafka-生产者
-* 生产者写入数据过程
+### 生产者写入数据过程
 <img src='./images/25.png'>
 
-* 生产者分区策略
-    ```
-    producer.send(new ProducerRecord<>(topic, value), new Callback() {...}
+### 生产者分区策略
+```
+producer.send(new ProducerRecord<>(topic, value), new Callback() {...}
     
-    # 使用默认分区规则
-    ```
-    * 默认分区器`DefaultPartitioner`分区规则：
-        * 如果指定分区，就使用指定的分区
-        * 如果没有指定分区，但是有key，就使用key的hash值，对分区数取余，得到分区编号
-        * 如果没有指定分区，也没有key，kafka采用sticky Partition(黏性分区器)，会随机选择一个分区，并尽可能的一直使用该分区，直到该分区的batch已满(16k)或时间到，kafka再随机一个分区进行使用（和上一次不同）
+# 使用默认分区规则
+```
+* 默认分区器`DefaultPartitioner`分区规则：
+    * 如果指定分区，就使用指定的分区
+    * 如果没有指定分区，但是有key，就使用key的hash值，对分区数取余，得到分区编号
+    * 如果没有指定分区，也没有key，kafka采用sticky Partition(黏性分区器)，会随机选择一个分区，并尽可能的一直使用该分区，直到该分区的batch已满(16k)或时间到，kafka再随机一个分区进行使用（和上一次不同）
         
-    ```
-    ### 指定分区情况
-    public ProducerRecord(String topic, Integer partition, Long timestamp, K key, V value, Iterable<Header> headers) {
-        ...
-    }
-    public ProducerRecord(String topic, Integer partition, Long timestamp, K key, V value) {
-        ...
-    }
-    public ProducerRecord(String topic, Integer partition, K key, V value, Iterable<Header> headers) {
-        ...
-    }
-    public ProducerRecord(String topic, Integer partition, K key, V value) {
-        ...
-    }
-    ### 未指定分区，但有key情况
-    public ProducerRecord(String topic, K key, V value) {
-        ...
-    }
-    ### 既没有指定分区，也没有key情况
-    public ProducerRecord(String topic, V value) {
-        ...
-    }
-    ```
+```
+### 指定分区情况
+public ProducerRecord(String topic, Integer partition, Long timestamp, K key, V value, Iterable<Header> headers) {
+    ...
+}
+public ProducerRecord(String topic, Integer partition, Long timestamp, K key, V value) {
+    ...
+}
+public ProducerRecord(String topic, Integer partition, K key, V value, Iterable<Header> headers) {
+    ...
+}
+public ProducerRecord(String topic, Integer partition, K key, V value) {
+    ...
+}
+### 未指定分区，但有key情况
+public ProducerRecord(String topic, K key, V value) {
+    ...
+}
+### 既没有指定分区，也没有key情况
+public ProducerRecord(String topic, V value) {
+    ...
+}
+```
+    
+### 生产者如何提高kafka吞吐量
+1. 总缓存区大小 RecordAccumulator
+2. 批次大小 batch.size
+3. 轮询时间 linger.ms
+4. 压缩数据 compression.type
+👻：是否可在配置文件中配置，也可在代码中配置
