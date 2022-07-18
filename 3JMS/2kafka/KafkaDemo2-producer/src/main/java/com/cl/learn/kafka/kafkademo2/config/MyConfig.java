@@ -39,8 +39,10 @@ public class MyConfig {
         map.put(ProducerConfig.LINGER_MS_CONFIG, 1);        // 每1ms push一次
         map.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");  // 压缩类型
         // acks
-        map.put(ProducerConfig.ACKS_CONFIG, "0"); // 1不等回应直接下一条 0leader节点回应 -1所有都
+        map.put(ProducerConfig.ACKS_CONFIG, "-1"); // 1不等回应直接下一条 0leader节点回应 -1所有都
         map.put(ProducerConfig.RETRIES_CONFIG,3);   // 该配置最大可配置int最大，2^31
+
+        map.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
 
 //        Producer producer = defaultKafkaProducerFactory.createProducer();
         KafkaProducer kafkaProducer = new KafkaProducer<>(map);

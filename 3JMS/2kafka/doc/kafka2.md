@@ -110,3 +110,26 @@ public ProducerRecord(String topic, V value) {
 3. 轮询时间 linger.ms
 4. 压缩数据 compression.type
 👻：是否可在配置文件中配置，也可在代码中配置
+
+### 生产者数据可靠性
+* 数据传递语音
+    * 至少一次（At Least Once）= ACK级别设置为-1 `&&` 分区副本数大于等于2 `&&` ISR里应答的最小副本数大于等于2
+    * 最多一次（At Most Once）= ACK级别设置为0
+    * 总结
+        * 至少一次：可以保证数据不丢失，但不能保证数据不重复
+        * 最多一次：可以保证数据不重复，但不能保证数据不丢失
+    * 精确一次（Exactly Once）：对于一些非常重要的信息，要求数据即不能重复也不能丢失
+        * Kafka 0.11 版本后，引入了一个重大特性：幂等性和事务
+
+#### 幂等性
+* 幂等性：指Producer不论向Broker发送多少次重复数据，Broker端都只会持久化一条，保证了不重复
+* 精确一次（Exactly Once）= 幂等性(不重复) `&&` 至少一次(ack=-1`&&`分区副本数>=2`&&`ISR最小副本数量>=2)
+* 如何判断是否重复：具有<PID,Partition,SeqNumber>相同主键的消息提交时，Broker只会持久化一条。
+    * PID：kafka每次重启都会分配一个新的
+    * Partition：分区号
+    * Sequence Number：序列化号，是单调自增的
+
+所以幂等性只能保证的是在 **单分区** **单会话**(每次启动)内不重复
+
+* 如何开启幂等性
+    * ` map.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);`(enable.idempotence默认为true）
