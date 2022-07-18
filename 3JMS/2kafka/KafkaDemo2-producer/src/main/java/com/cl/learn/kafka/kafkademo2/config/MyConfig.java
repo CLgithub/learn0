@@ -31,14 +31,16 @@ public class MyConfig {
         System.out.println(configurationProperties);
         HashMap<String, Object> map= new HashMap<>();
         map.putAll(configurationProperties); // 由于DefaultKafkaProducerFactory 中，配置map是final的，所以需要复制一份
-        map.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, MyPartitioner.class.getName());  // 添加自定义分区气
-
+        // 自定义分区器
+        map.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, MyPartitioner.class.getName());
         // 提高吞吐量相关配置配置
         map.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 1024*1024*32); // 总缓存区 32M
         map.put(ProducerConfig.BATCH_SIZE_CONFIG, 1024*16); // 每批次 16k
         map.put(ProducerConfig.LINGER_MS_CONFIG, 1);        // 每1ms push一次
         map.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");  // 压缩类型
-
+        // acks
+        map.put(ProducerConfig.ACKS_CONFIG, "0"); // 1不等回应直接下一条 0leader节点回应 -1所有都
+        map.put(ProducerConfig.RETRIES_CONFIG,3);   // 该配置最大可配置int最大，2^31
 
 //        Producer producer = defaultKafkaProducerFactory.createProducer();
         KafkaProducer kafkaProducer = new KafkaProducer<>(map);
