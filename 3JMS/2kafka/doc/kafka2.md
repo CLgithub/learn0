@@ -143,3 +143,25 @@ public ProducerRecord(String topic, V value) {
     * 一条数据过来，先看是哪个分区，即用该分区的leader节点的 事务协调器 来处理该条数据 
     * 事务id的hashcode值%50，计算出该事务存在事务主题的哪个分区
     <img src='./images/26.png'>
+    
+### 生产者保证数据有序
+多分区：有办法设置为有序
+单分区：有条件有序
+
+* kafaka在1.x版本之前，保证单分区有序，条件如下
+    ```
+    max.in.flight.requests.per.connection=1 #把berker缓冲设置为1，默认为5
+    map.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 1);
+    ```
+    (不需要考虑是否开启幂等性)
+
+* kafka在1.x版本之后，保证单分区有序，条件如下
+    1. 为开启幂等性
+    ```
+    map.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 1);
+    ```
+    2. 开启幂等性
+    ```
+    MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION 小于等于5
+    ```
+    原因：在kafka1.x以后，启用了幂等性，kafka服务端会缓存producer发来的最近5个request的元数据，无论如何，都可以保证最近5个request的数据有序（幂等性条件，pid&分区&序列号）序列号单调递增，若有乱序数据，会进行缓存，待正常数据来后，调整顺序再落盘

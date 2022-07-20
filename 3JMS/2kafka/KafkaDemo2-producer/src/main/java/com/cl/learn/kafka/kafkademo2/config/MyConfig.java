@@ -46,6 +46,9 @@ public class MyConfig {
         // 指定事务id
         map.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, "transactional_id_01");
 
+        // 保证单分区内有序
+        map.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION,5);    // 设置最多缓存5个
+
 //        Producer producer = defaultKafkaProducerFactory.createProducer();
         KafkaProducer kafkaProducer = new KafkaProducer<>(map);
         return kafkaProducer;
