@@ -42,10 +42,13 @@ public class Task implements CommandLineRunner {
         for (int i = 0; i < 10; i++) {
             String value=dateStr+"---"+i;
 //            test1(value);
-            test2(value);
+//            test2(value);
         }
+        test3(dateStr);
 
     }
+
+
 
     /**
      * 利用kafkaTemplate 同步发送
@@ -76,5 +79,37 @@ public class Task implements CommandLineRunner {
                 }
             }
         });
+    }
+
+    /**
+     * 测试事务
+     * @param dateStr
+     */
+    private void test3(String dateStr) {
+        kafkaProducer.initTransactions();   // 1 初始化事务
+        kafkaProducer.beginTransaction();   // 2 开始事务
+        try {
+            for(int i=0; i<10; i++){
+                String value=dateStr+"---"+i;
+                kafkaProducer.send(new ProducerRecord(topic, value), new Callback() {
+                    @Override
+                    public void onCompletion(RecordMetadata metadata, Exception exception) {
+                        if (exception==null){
+                            logger.info("通过kafkaProducer成功写入：topic="+metadata.topic()+",partition="+metadata.partition()+",offset="+metadata.offset()+",value="+value);
+                        }else {
+                            logger.error("通过kafkaProducer写入有误：",exception);
+                        }
+                    }
+                });   // 发送数据
+            }
+            int x=1/0; // 模拟失败的情况
+            kafkaProducer.commitTransaction();  // 3 提交事务
+        } catch (Exception e){
+            logger.error("写入有误：",e);
+            kafkaProducer.abortTransaction();   // 若有异常 终止事务
+        } finally {
+//            kafkaProducer.close();
+        }
+
     }
 }

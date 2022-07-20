@@ -124,7 +124,7 @@ public ProducerRecord(String topic, V value) {
 #### 幂等性
 * 幂等性：指Producer不论向Broker发送多少次重复数据，Broker端都只会持久化一条，保证了不重复
 * 精确一次（Exactly Once）= 幂等性(不重复) `&&` 至少一次(ack=-1`&&`分区副本数>=2`&&`ISR最小副本数量>=2)
-* 如何判断是否重复：具有<PID,Partition,SeqNumber>相同主键的消息提交时，Broker只会持久化一条。
+* 如何判断是否重复：具有<ProducerID,Partition,SeqNumber>相同主键的消息提交时，Broker只会持久化一条。
     * PID：kafka每次重启都会分配一个新的
     * Partition：分区号
     * Sequence Number：序列化号，是单调自增的
@@ -133,3 +133,13 @@ public ProducerRecord(String topic, V value) {
 
 * 如何开启幂等性
     * ` map.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);`(enable.idempotence默认为true）
+
+#### 生产者事务
+开启事务必须开启幂等性
+* 生产者事务
+    * 每个broker上都有一个 事务协调器（Transaction Coordinator）
+    * kafka中，有一个存储事务的特殊主题`__transaction_state-分区-Leader`，默认50个分区
+    * 生产者在使用事务前，必须先自定义一个唯一的事务id，有了事务id，即使客户端挂掉，重启后也能继续处理未完成的事务
+    * 一条数据过来，先看是哪个分区，即用该分区的leader节点的 事务协调器 来处理该条数据 
+    * 事务id的hashcode值%50，计算出该事务存在事务主题的哪个分区
+    <img src='./images/26.png'>
