@@ -165,3 +165,14 @@ public ProducerRecord(String topic, V value) {
     MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION 小于等于5
     ```
     原因：在kafka1.x以后，启用了幂等性，kafka服务端会缓存producer发来的最近5个request的元数据，无论如何，都可以保证最近5个request的数据有序（幂等性条件，pid&分区&序列号）序列号单调递增，若有乱序数据，会进行缓存，待正常数据来后，调整顺序再落盘
+    
+## kafka-Broker
+### zookeeper 存储的信息
+<img src='./images/27.png'>
+
+只需记住3点：
+1. `ls /brokers/ids` 列出brokers
+2. `get /brokers/topics/topicA/partitions/0/state` 查看某topic某分区的信息
+3. `get /controller` 辅助选举Leader
+ 
+### kafka-Broker总体工作流程
