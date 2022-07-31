@@ -189,3 +189,38 @@ kafka启动流程：
     4）其他各个broker的Controller从zk中获取这些信息，随时应对`/controller`中节点挂掉的情况，准备上位
 3. 假设某分区的Leader挂掉，主Controller能在`/brokers/ids/`中感知到，会从`/brokers/topics/topicA/partitions/2/state`中拉取各topic各分区的信息，重新进行选举，并更新
 <img src='./images/28.png'>
+
+### 添加Broker
+清理目录`kafka/logs`，`kafka/data`
+正常配置，注意`broker.id`
+正常启动
+
+* 将原有主题进行负载均衡到新的broker
+    1. 编写一个json文件`topics-to-move.json`，内容如下：
+        ```
+        {
+            "topics":[
+                {"topic":"topicA"}
+            ],
+            "version":1        
+        }
+        ```
+    2. 利用文件执行命令，生成负载均衡计划
+        ```
+         bin/kafka-reassign-partitions.sh --bootstrap-server vUbuntu1:9092 --topics-to-move-json-file topics-to-move.json --broker-list "1,2,3,4" --generate
+        ```
+        <img src='./images/29.png'>
+    3. 创建副本存储计划`increase-replication-factor.json`，将生成的执行计划拷贝至其中
+        ```
+        {"version":1,"partitions":[{"topic":"topicA","partition":0,"replicas":[1,2],"log_dirs":["any","any"]},{"topic":"topicA","partition":1,"replicas":[2,3],"log_dirs":["any","any"]},{"topic":"topicA","partition":2,"replicas":[3,4],"log_dirs":["any","any"]}]}
+        ```
+    4. 执行命令
+        ```
+         bin/kafka-reassign-partitions.sh --bootstrap-server vUbuntu1:9092 --reassignment-json-file increase-replication-factor.json --execute
+        ```
+    5. 验证
+        ```
+        bin/kafka-reassign-partitions.sh --bootstrap-server vUbuntu1:9092 --reassignment-json-file increase-replication-factor.json --verify
+        ```
+ 之后可以直接编辑`increase-replication-factor.json`文件对副本位置分配进行修改，修改会在`/home/l/develop/kafka_2.13-3.2.0/data`中有所体现
+ 
