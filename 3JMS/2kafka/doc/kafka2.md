@@ -156,7 +156,7 @@ public ProducerRecord(String topic, V value) {
     (不需要考虑是否开启幂等性)
 
 * kafka在1.x版本之后，保证单分区有序，条件如下
-    1. 为开启幂等性
+    1. 未开启幂等性
     ```
     map.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 1);
     ```
@@ -176,3 +176,16 @@ public ProducerRecord(String topic, V value) {
 3. `get /controller` 辅助选举Leader
  
 ### kafka-Broker总体工作流程
+kafka启动流程：
+1. 启动zk集群
+2. 启动kafka各个broker：
+    1）抢占`/controller`：每个broker中都有一个controller，启动成功的broker会抢占`/controller`，谁先抢到就用谁的Controller，如`{"version":1,"brokerid":1003,"timestamp":"1659239392351"}`
+    2）由该Controller监听各个broker的变化：某broker启动成功，会在zk中，注册到`/brokers/ids/`中
+    3）由该Controller选举出各topic的各分区对应的Leader，选举规则：在ISR中存活，按分区中的所有副本（AR）排序在先的优先，轮询，得到各topic各分区的Leader，并选举出的数据将传到zk集群中
+    ```
+    >get /brokers/topics/topicA/partitions/2/state
+    {"controller_epoch":8,"leader":1003,"version":1,"leader_epoch":14,"isr":[1003,1001]}
+    ```
+    4）其他各个broker的Controller从zk中获取这些信息，随时应对`/controller`中节点挂掉的情况，准备上位
+3. 假设某分区的Leader挂掉，主Controller能在`/brokers/ids/`中感知到，会从`/brokers/topics/topicA/partitions/2/state`中拉取各topic各分区的信息，重新进行选举，并更新
+<img src='./images/28.png'>
