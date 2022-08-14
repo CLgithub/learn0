@@ -224,3 +224,161 @@ kafka启动流程：
         ```
  之后可以直接编辑`increase-replication-factor.json`文件对副本位置分配进行修改，修改会在`/home/l/develop/kafka_2.13-3.2.0/data`中有所体现
  
+# 回顾
+```
+一、概述
+    1、定义
+        1）传统定义
+            分布式 发布订阅 消息队列
+            发布订阅：分为多种类型 订阅者根据需求 选择性订阅
+        2）最新定义
+            流平台（存储、计算）
+    2、消息队列应用场景
+        1）缓存消峰
+        2）解耦
+        3）异步通信
+    3、两种模式
+        1）点对点
+            （1）一个生产者 一个消费者 一个topic 会删数据 用得不多
+        2）发布模式
+            （1）多个生产者 多个消费者 相互对立 多个topic 不会删数据
+    4、架构
+        1）生产者
+            海量数据
+        2）broker
+            （1）broker 就是服务器节点
+            （2）topic 主题 对数据分类
+            （3）partition 分区
+            （4）副本 保证可靠性
+                leader follower 不管生产者还是消费者 只针对leader操作
+        3）消费者
+            （1）消费者之间相互独立
+            （2）消费者租（某个分区 只能由一个消费者消费）
+        4）zookeeper
+            （1）broker.ids
+            （2）leader
+二、入门
+    1、安装
+        1）broker.id 必须全局唯一
+        2）配置 broker.id log.dirs zk/zkfak
+        3）启动停止 先停kafka 再停zk
+        4）启停脚本
+            #!/bin/bash
+            case $1 in
+            "start")
+                for i int vubuntu1 vubuntu2 vubuntu3
+                do
+                    ssh $i "绝对路径"
+                done
+            ;;
+            "stop")
+    2、常用命令
+        1）主题 kafak-topic.sh
+            (1) --bootstrap-server vUbuntu1:9092,vUbuntu2:9092
+            (2) --topic topicA
+            (3) --create #增
+            (4) --delete #删
+            (5) --alter #该
+            (6) --list  #查
+            (7) --describe #查
+            (8) --partitions 3 # 指定分区数
+            (9) --replication-factor 2 # 指定副本数
+        2）生产者 kafka-console-producer.sh
+            (1) --bootstrap-server vUbuntu1:9092,vUbuntu2:9092
+            (2) --topic topicA
+        3）消费者 kafka-console-consumer.sh
+            (1) --bootstrap-server vUbuntu1:9092,vUbuntu2:9092
+            (2) --topic topicA
+三、生产者
+    1、原理
+        main线程
+            创建kafkaProducer
+            调用 send(,) 带回调与不带回调
+            拦截器
+            序列化器 （java的序列化太重）
+            分区器
+                RecordAccumulator（32M）
+                ProducerBatch（16k）
+                    达到ProducerBatch或轮训时间，就被sender拉取一次
+        sender线程
+            一个broker一个队列
+            每个队列最多缓存5个请求
+            底层链路上，是selector
+        broker
+            分区leader收到数据 备份到副本
+            对selector进行应答，acks 0 1 -1(all)
+           
+        sender线程
+            selector收到，若成功，清除队列中的请求、清除分区气中的缓存
+            若失败，则进行重试，重试次数，int最大数量
+    2、异步发送API
+        0）配置
+            (1)连接 
+            (2) 序列化器
+        1）创建生产者
+            KafkaProducer<String,String>()
+        2）发送数据
+            send() send(,new Callback)
+        3）关闭资源
+    3、同步发送
+        send() send(,new Callback).get()
+    4、分区
+        （1）好处
+            存储
+            计算
+        （2）数据发送默认分区规则
+            （1）指定发送到某分区，按指定
+            （2）未指定分区，有key，key取hash，对分区总输取余 得到分区数
+            （3）未指定分区，无key，粘性分区
+                随机，知道轮训时间或批次大小到
+                切换，除上一次的外随机
+        （3）自定义分区规则
+            定义类，直线partitioner接口
+    5、吞吐量提高
+        1）提高缓存总大小（默认32m）
+        2）提高批次大小(默认16k)
+        3）轮训时间(默认0)
+        4）压缩
+    6、可靠性
+        acks
+            0 不等应答直接发下一个
+            1 leader应答发下一个  传输普通日志
+            -1 全部应答 完全可靠 副本>=2 && isr>=2       
+                带来问题：数据重复
+    7、数据重复
+        1）幂等性
+            <pid,分区号,序列号>
+            默认打开
+        2）事务
+            底层基于幂等性
+            （1）初始化
+            （2）启动
+            （3）消费者offset
+            （4）提交
+            （5）终止
+    8、数据有序
+        单分区内有序（有条件）
+        多分区有序怎么办？
+            多个拉到一起排序，还不如单分区有序
+    9、乱序
+        1）kafka1.0以前，请求就缓存1个
+        2）kafka1.0以后
+            （1）关闭幂等性，请求最多缓存1个
+            （2）开启幂等性，请求最多缓存5个
+四、broker
+    1、zk存储了哪些
+        1）broker.ids
+        2）leader
+        3）controller 辅助选举
+    2、工作流程
+    3、服役
+        1）一台新服务器
+        2）对哪个主题进行操作
+        3）形成计划
+        4）执行计划
+        5）验证计划
+    4、退役
+```
+
+
+ 
