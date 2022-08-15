@@ -224,7 +224,7 @@ kafka启动流程：
         ```
  之后可以直接编辑`increase-replication-factor.json`文件对副本位置分配进行修改，修改会在`/home/l/develop/kafka_2.13-3.2.0/data`中有所体现
  
-# 回顾
+### 回顾
 ```
 一、概述
     1、定义
@@ -289,6 +289,7 @@ kafka启动流程：
         3）消费者 kafka-console-consumer.sh
             (1) --bootstrap-server vUbuntu1:9092,vUbuntu2:9092
             (2) --topic topicA
+            (3) --from-beginning
 三、生产者
     1、原理
         main线程
@@ -380,5 +381,25 @@ kafka启动流程：
     4、退役
 ```
 
+### 副本
+* 副本基本信息
+    1. 作用：提高数据可靠性
+    2. 默认1个副本，生产环境一般配置2个，副本太多会占用磁盘和网络资源，降低效率
+    3. 副本分为Leader和Follower，生产者只与Leader交互
+    4. 所有副本统称为AR（Assigned Repllicas）
+        AR=ISR+OSR
+        ISR：和Leader保持同步的Follower，同步周期`replica.lag.time.max.ms`,默认30s
+        OSR：延时过多的副本
 
- 
+* 副本选举规则
+[副本选举规则](#kafka-Broker总体工作流程)
+选举规则一定是：AR中排在前面，在ISR中的
+
+LEO（log end offset）每个副本最后一个offset，LEO其实就是最新的offset+1
+HW(High Watermark)所有副本中最小的LEO
+* 当Follower挂掉时：
+<img src='./images/30.png'>
+
+* 当Leader挂掉时：
+<img src='./images/31.png'>
+
