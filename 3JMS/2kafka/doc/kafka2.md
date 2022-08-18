@@ -391,7 +391,7 @@ kafka启动流程：
         ISR：和Leader保持同步的Follower，同步周期`replica.lag.time.max.ms`,默认30s
         OSR：延时过多的副本
 
-* 副本选举规则
+* 副本Leader选举规则
 [副本选举规则](#kafka-Broker总体工作流程)
 选举规则一定是：AR中排在前面，在ISR中的
 
@@ -403,3 +403,42 @@ HW(High Watermark)所有副本中最小的LEO
 * 当Leader挂掉时：
 <img src='./images/31.png'>
 
+* 副本增减少
+    * 参照[Broker增减](#添加Broker)
+
+* Leader Partition 自动平衡
+正常情况下，Kafak会自动把Leader均匀分布在各个机器上，保证每台机器读写均匀，但由于某些服务器宕机，可能造成不平衡
+    * `auto.leader.rebalance.enable=true`,默认 自动平衡
+    * `leader.imbalance.per.broker.percentage=10%`,默认，如果每个broker超过这个值，就会触发leader自动平衡
+    * `leader.imbalnce.check.interval.seconds=300s`,检测周期
+等了许久，未发现其自动再平衡，以下为手动再平衡方法
+    ```
+    unset JMX_PORT;./kafka-leader-election.sh --bootstrap-server vUbuntu1:9092 --topic topicA --partition=1 --election-type preferred
+    # partition指定需要重新分配leader的partition编号
+    ```
+    
+* 文件存储机制
+<img src='./images/32.png'>
+
+每个段segment大小默认1G `log.segment.bytes=1073741824 #1024*1024*1024`
+    * 文件内容查看
+        ```
+        ./kafka-run-class.sh kafka.tools.DumpLogSegments --files ../data/topicA-0/00000000000000000010.log
+        ```     
+<img src='./images/33.png'>
+注意⚠️：
+    1. index为稀疏索引，没写入4kb数据，会往index文件写入一条索引。参数log.index.interval.bytes=4kb
+    2. index文件中保存的是相对offset，这样能保证offset的值所占空间不会过大
+>topic=topicA,partition=1,offset=8,value=2022-08-18 22:19:36---1
+topic=topicA,partition=1,offset=9,value=2022-08-18 22:19:36---4
+topic=topicA,partition=1,offset=10,value=2022-08-18 22:19:36---7
+topic=topicA,partition=2,offset=8,value=2022-08-18 22:19:36---2
+topic=topicA,partition=2,offset=9,value=2022-08-18 22:19:36---5
+topic=topicA,partition=2,offset=10,value=2022-08-18 22:19:36---8
+topic=topicA,partition=0,offset=10,value=2022-08-18 22:19:36---0
+topic=topicA,partition=0,offset=11,value=2022-08-18 22:19:36---3
+topic=topicA,partition=0,offset=12,value=2022-08-18 22:19:36---6
+topic=topicA,partition=0,offset=13,value=2022-08-18 22:19:36---9
+
+假设现在要找`offset=12`的数据，12比`Index offset: 10, log offset: 13`中的10要大，比下一条索引的值要小，则找到对应的`position=0`,到对应的log文件中，去找到对应的`position=0`的数据，找到`offset=12`的存储位置
+<img src='./images/34.png'>
