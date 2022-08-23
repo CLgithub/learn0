@@ -448,7 +448,7 @@ topic=topicA,partition=0,offset=13,value=2022-08-18 22:19:36---9
     * `log.retention.hours` 最低优先级 默认7天
     * `log.retention.minutes` 分钟
     * `log.retention.ms` 最高优先级ms
-    * `log.retention.check.interval.ms` 检查周期，默认5分钟
+    * `log.retention.check.interval.ms` 检查周期，默认300000ms(5分钟)
     
     一旦超过设置时间，两种处理方式，delete和compact
     * delete删除
@@ -459,3 +459,15 @@ topic=topicA,partition=0,offset=13,value=2022-08-18 22:19:36---9
     * compact压缩
         * `log.cleanup.policy=compact`压缩策略
             <img src='./images/35.png'>
+
+* 高效读写数据
+1. 分布式集群，分区技术，并行度高
+2. 读数据采用稀疏索引，快速定位
+3. 在磁盘中采用顺序写入
+4. 页缓存+零拷贝技术
+    <img src='./images/36.png'>
+
+
+
+
+
