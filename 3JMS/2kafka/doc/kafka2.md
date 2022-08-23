@@ -442,3 +442,20 @@ topic=topicA,partition=0,offset=13,value=2022-08-18 22:19:36---9
 
 假设现在要找`offset=12`的数据，12比`Index offset: 10, log offset: 13`中的10要大，比下一条索引的值要小，则找到对应的`position=0`,到对应的log文件中，去找到对应的`position=0`的数据，找到`offset=12`的存储位置
 <img src='./images/34.png'>
+
+* 文件清理策略
+    默认7天：
+    * `log.retention.hours` 最低优先级 默认7天
+    * `log.retention.minutes` 分钟
+    * `log.retention.ms` 最高优先级ms
+    * `log.retention.check.interval.ms` 检查周期，默认5分钟
+    
+    一旦超过设置时间，两种处理方式，delete和compact
+    * delete删除
+        * `log.cleanup.policy=delete` 删除策略
+            1. 基于时间，默认打开，以segment中所有记录最大的时间戳为文件时间
+            2. 基于大小：默认关闭，超过设置日志总大小，删除最早的segment
+            `log.retention.bytes`默认-1，无穷大
+    * compact压缩
+        * `log.cleanup.policy=compact`压缩策略
+            <img src='./images/35.png'>
