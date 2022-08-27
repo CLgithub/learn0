@@ -469,7 +469,7 @@ topic=topicA,partition=0,offset=13,value=2022-08-18 22:19:36---9
     
 ## kafka-消费者
 ### kafka消费方式
-consumer采用从broker中主动拉取数据方式
+consumer采用从broker中主动拉取数据方式，每个消费者的offset存储在一个特殊的主题上`__consumer_offsets`
 * 因为不同的消费者有不同的消费能力
 
 不足之处：
@@ -486,7 +486,19 @@ consumer采用从broker中主动拉取数据方式
         * 消费者组之间相互不影响，所有消费者都属于某个消费者组，即消费者组是逻辑上的一个订阅者
     <img src='./images/37.png'>
     <img src='./images/38.png'>
-
+* 消费者主初始化流程
+    1. 每个broker上都有一个coordinator，groupid哈希值%__consumer_offsets分区数，（取余），选定某个__consumer_offsets分区所在的broker上的coordinator
+    2. 每个消费者consumer都向该coodinator发送JoinGroup请求，加入到消费者组中
+    3. coodinator选定一个消费者consumer Leader，向其他发送自己收到的所有消费者信息
+    4. 消费者领导consumer Leader制定一个消费方案，回传给coodinator
+    5. coodinator把消费方案分发给每个消费者
+    * 某消费者被除以：
+        * 每个消费者和coordinator会保持心跳（默认3s），一旦超时（`session.timout.ms=45s`）,该消费者会被除以
+        * 某消费者处理数据时间过长（`max.poll.interval.ms=5分钟`）
+        * 消费者组中某个消费者被除以，会触发再平衡超值，其他的消费者来接替他的活
+    <img src='./images/39.png'>
+    
+    
 ### kafka消费者API
 ### 生产经验-分区的分配以及再平衡
 ### offset位移
