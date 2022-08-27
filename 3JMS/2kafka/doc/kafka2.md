@@ -498,6 +498,19 @@ consumer采用从broker中主动拉取数据方式，每个消费者的offset存
         * 消费者组中某个消费者被除以，会触发再平衡超值，其他的消费者来接替他的活
     <img src='./images/39.png'>
     
+* 消费者组消费流程
+    1. 消费者组创建一个消费者网络客户端ConsumerNetworkClient
+    2. 消费者组利用网络客户端向broker发送消费抓取数据请求sendFetches，3个参数
+        1. `Fetch.min.bytes`默认1字节，每批次最小抓取大小
+        2. `Fetch.max.wait.ms`默认500ms，若一批次数据大小未达到最小抓取要求1字节，经过500ms照样抓取
+        3. `Fetch.max.bytes`默认50M字节，每批次最大抓取数
+    3. broker收到请求，通过回调方法onSuccess，把对应的结果放入其中，放入一个队列queue里
+    4. 消费者组从队列中抓取数据，一次默认`Max.poll.records`500条
+        1. 反序列化
+        2. 拦截器
+        3. 数据处理
+    <img src='./images/40.png'>
+    
     
 ### kafka消费者API
 ### 生产经验-分区的分配以及再平衡
