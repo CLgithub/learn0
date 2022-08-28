@@ -3,26 +3,31 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>3JMS</artifactId>
+        <artifactId>2kafka</artifactId>
         <groupId>com.cl.learn</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>2kafka</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>kafkaDemo1-producer</module>
-        <module>KafkaDemo2-producer</module>
-        <module>KafkaDemo3-receiver</module>
-        <module>KafkaDemo3-producer</module>
-    </modules>
+    <artifactId>KafkaDemo3-receiver</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
 
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
+
+    </dependencies>
 
 </project>

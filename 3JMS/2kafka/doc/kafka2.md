@@ -512,7 +512,20 @@ consumer采用从broker中主动拉取数据方式，每个消费者的offset存
     <img src='./images/40.png'>
     
     
-### kafka消费者API
+### kafkaAPI
+[官方文档](https://docs.spring.io/spring-kafka/docs/current/reference/html)
+* kafka生产者API，[发送消息API文档](https://docs.spring.io/spring-kafka/docs/current/reference/html/#sending-messages)
+    * 使用kafkaTemplate
+    * 通过kafka-clients，直接创建kafkaProducer
+    * 使用DefaultKafkaProducerFactory创建Producer，需要注意不在需要Producer时，需要调用closeThreadBoundProducer()
+    [样例KafkaDemo3-producer](./KafkaDemo3-producer/)
+* kafka消费者API，[接收消息API文档](https://docs.spring.io/spring-kafka/docs/current/reference/html/#receiving-messages)
+    * 通过kafka-clients 直接创建kafkaConsumer
+    * 通过spring-kafka 创建kafkaConsumer
+    * 通过kafka消息监听容器 KafkaMessageListenerContainer 配置自定义监听器
+    [样例KafkaDemo3-receiver](./KafkaDemo3-receiver/)
+
+
 ### 生产经验-分区的分配以及再平衡
 ### offset位移
 
