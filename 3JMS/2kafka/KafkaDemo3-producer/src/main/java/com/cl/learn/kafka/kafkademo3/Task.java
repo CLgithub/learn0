@@ -45,8 +45,8 @@ public class Task implements CommandLineRunner {
         SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String dateStr = simpleDateFormat.format(new Date());
         test1(dateStr);
-        Producer producer = defaultKafkaProducerFactory.createProducer();
-        test2(dateStr,  producer);
+//        Producer producer = defaultKafkaProducerFactory.createProducer();
+        test2(dateStr,  kafkaProducer);
         defaultKafkaProducerFactory.closeThreadBoundProducer();
     }
 
@@ -65,10 +65,10 @@ public class Task implements CommandLineRunner {
     }
 
     private void test2(String dateStr, Producer kafkaProducer){
-//        kafkaProducer.initTransactions(); //1 初始化事务
-//        kafkaProducer.beginTransaction(); //2 开启事务
+        kafkaProducer.initTransactions(); //1 初始化事务
+        kafkaProducer.beginTransaction(); //2 开启事务
         try {
-            for(int i=0; i<10; i++){
+            for(int i=1; i<10; i++){
                 String value=dateStr+"---"+i;
                 kafkaProducer.send(new ProducerRecord(topics[0], value), new Callback() {
                     @Override
@@ -80,11 +80,17 @@ public class Task implements CommandLineRunner {
                         }
                     }
                 });   // 发送数据
+//                if(i%10==0){
+//                    kafkaProducer.commitTransaction();
+//                    kafkaProducer.beginTransaction(); //2 开启事务
+//                }
+//                Thread.sleep(1000);
             }
-//            kafkaProducer.commitTransaction();  // 3 提交事务
+//            int x=1/0;
+            kafkaProducer.commitTransaction();  // 3 提交事务
         } catch (Exception e){
             System.out.println("写入有误："+e);
-//            kafkaProducer.abortTransaction();   // 4 若有异常 回滚
+            kafkaProducer.abortTransaction();   // 4 若有异常 回滚
         } finally {
 //            kafkaProducer.close();
         }

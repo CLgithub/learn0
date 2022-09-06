@@ -102,7 +102,7 @@ public class Task implements CommandLineRunner {
                     }
                 });   // 发送数据
             }
-//            int x=1/0; // 模拟失败的情况
+            int x=1/0; // 模拟失败的情况
             kafkaProducer.commitTransaction();  // 3 提交事务
         } catch (Exception e){
             logger.error("写入有误：",e);
