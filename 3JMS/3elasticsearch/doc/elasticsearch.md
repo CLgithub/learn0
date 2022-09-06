@@ -1,4 +1,19 @@
 # ElasticSearch
+
+## 基础知识
+* 什么是ElasticSearch：
+    ElasticSearch（简称ES）是一个**分布式**、**Resful风格的** **搜索和数据分析** 引擎，是用Java开发并且是当前最流行的开源的企业级搜索引擎，能够达到近实时搜索，稳定可靠快速安装使用方便
+
+* 什么是倒排索引：
+    * 正排索引：通过id，查找关键字，或内容
+    * 倒排索引：通过关键字，查找id（有点类似非主键索引）
+* Solr与ES比较：
+    * Solr需要zk进行分布式管理，而ES自身带有分布式协同管理功能
+    * Solr支持更多格式数据，入JSON、XML、CSV，ES只支持JSON
+    * Solr对已有数据搜索较好，但实时搜索效率明显低于ES
+* 通用数据处理流程：
+    <img src='./images/2.png'>
+    
 ## 集群配置
 各版本下载[地址](https://www.elastic.co/cn/downloads/past-releases#elasticsearch)
 ### ES
@@ -6,7 +21,7 @@
     * 使用es自带jdk`bin/elasticsearch-env`，添加以下内容
         ```
         ES_HOME=/home/l/develop/elasticsearch-7.17.5
-        JAVA_HOME=/home/l/develop/elasticsearch-7.17.5/jdk
+        ES_JAVA_HOME=/home/l/develop/elasticsearch-7.17.5/jdk
         ```
         * `config/jvm.options`文件，修改
             ```
