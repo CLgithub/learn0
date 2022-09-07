@@ -79,3 +79,44 @@ bin/elasticsearch
 * 启动`bin/kibana`
 浏览器访问`http://vubuntu1:5601/app/dev_tools#/console`
 <img src='./images/1.png'>
+
+### 常用命令
+    ```
+    /_cat/allocation    # 查看单节点shard分配整体情况
+    /_cat/shards        # 查看各个shard的详细情况
+    /_cat/shards/{index}    # 查看指定分片的详细情况
+    /_cat/master            # 查看master节点信息
+    /_cat/nodes             # 查看各node节点信息
+    /_cat/tasks             # 
+    /_cat/indices           # 查看集群中所有index的详细信息
+    /_cat/indices/{index}   # 查看集群中指定index的详细信息
+    /_cat/segments          # 查看各index的段segment详细信息,包括segment名，所属shard，磁盘占用大小，是否刷盘
+    /_cat/segments/{index}  # 查看指定index的segment详细信息
+    /_cat/count             # 查看当前集群的doc数量
+    /_cat/count/{index}     # 查看指定索引的doc数量
+    /_cat/recovery          # 查看集群内每个shard的recorvery过程，调整replica
+    /_cat/recovery/{index}  # 查看指定索引的shard的recorvery过程
+    /_cat/health            # 查看几圈当前状态：红、黄、绿
+    /_cat/pending_tasks     # 查看当前集群的pending task
+    /_cat/aliases           # 查看集群中所有alias信息，路由配置等
+    /_cat/aliases/{alias}   # 查看指定索引的alias信息
+    /_cat/thread_pool       # 查看各个节点内部不同类型的threadpool的统计信息
+    /_cat/thread_pool/{thread_pools}     # 查看指定thread_pools的threadpool的统计信息
+    /_cat/plugins                   # 查看各节点上的plugin信息
+    /_cat/fielddata                 # 查看当前集群各个节点的fielddatat内存使用情况
+    /_cat/fielddata/{fields}        # 查看指定field的内存使用情况，里面传field属性对应的值
+    /_cat/nodeattrs                 # 查看单节点的自定义属性   
+    /_cat/repositories              # 输出几圈汇总注册快照存储库
+    /_cat/snapshots/{repository}    # 
+    /_cat/templates                 # 查看当前正在存在的模版信息
+    /_cat/ml/anomaly_detectors
+    /_cat/ml/anomaly_detectors/{job_id}
+    /_cat/ml/trained_models
+    /_cat/ml/trained_models/{model_id}
+    /_cat/ml/datafeeds
+    /_cat/ml/datafeeds/{datafeed_id}
+    /_cat/ml/data_frame/analytics
+    /_cat/ml/data_frame/analytics/{id}
+    /_cat/transforms
+    /_cat/transforms/{transform_id}
+    ```
