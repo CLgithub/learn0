@@ -120,3 +120,54 @@ bin/elasticsearch
     /_cat/transforms
     /_cat/transforms/{transform_id}
     ```
+### ES安装插件
+以安装分词插件为例：
+* 在线安装，以analysis-icu分词器为例
+    ```
+    # 查看已安装的插件
+    bin/elasticsearch-plugin list
+    
+    # 安装插件analysis-icu
+    bin/elasticsearch-plugin install analysis-icu 
+    # 安装好的插件会在plugin/目录下
+    
+    # 删除插件analysis-icu
+    bin/elasticsearch-plugin remove analysis-icu
+    
+    # 安装或删除插件后，需要重启ES才能生效
+    
+    测试分词效果
+    POST _analyze
+    {
+        "analyzer":"icu_analyzer",  # 默认分词器standard
+        "text":"中华人民共和国"
+    }
+    POST _analyze
+    {
+      "analyzer":"icu_analyzer",
+      "text":"滚滚长江东逝水，浪花淘尽英雄。是非成败转头空。青山依旧在，几度夕阳红。白发渔樵江渚上，惯看秋月春风。一壶浊酒喜相逢。古今多少事，都付笑谈中。"
+    }
+    ```
+* 离线安装，以analysis-ik分词器为例
+    ```
+    # 离线下载对应版本ik分词器
+    wget https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v7.17.5/elasticsearch-analysis-ik-7.17.5.zip
+    # 解压到plugins/analysis-ik/目录下
+    unzip elasticsearch-analysis-ik-7.17.5.zip -d analysis-ik
+    # 删除zip包
+    rm elasticsearch-analysis-ik-8.4.1.zip
+    # 重启
+    # 测试
+        # ik 粗粒度分词
+        POST _analyze
+        {
+          "analyzer":"ik_smart",
+          "text":"中华人民共和国"
+        }
+        # ik 最大单纯分词
+        POST _analyze
+        {
+          "analyzer":"ik_max_word",
+          "text":"中华人民共和国"
+        }
+    ```
