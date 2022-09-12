@@ -10,7 +10,7 @@ import java.lang.reflect.Proxy;
  */
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InstantiationException, IllegalAccessException {
 
         // 执行原始对象方法
         UserService userService = new UserServiceImpl();
@@ -19,6 +19,7 @@ public class Main {
 
         // 执行代理对象方法
         UserService userService_proxy = userCglib(UserServiceImpl.class);
+//        UserService userService_proxy = userJDKProxy(UserService.class, userService);
         userService_proxy.test();
         userService_proxy.test2();
 
@@ -35,6 +36,11 @@ public class Main {
         // 4 利用enhancer 创建代理对象
         T t= (T) enhancer.create();
         return t;
+    }
+
+    private static <T> T userJDKProxy(Class<T> clazz, T t) throws InstantiationException, IllegalAccessException {
+        T t_proxy = (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[]{clazz}, new MyInvocationHandler(t));
+        return t_proxy;
     }
 
 

@@ -24,9 +24,9 @@ public class MyMethodInterceptor implements MethodInterceptor {
     public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
         if(method.getName().equals("test")){
             System.out.println(o.getClass());
-            System.out.println("before...");
+            System.out.println("before... by CGLib");
             Object o1 = methodProxy.invokeSuper(o, objects); // 注意需要方法代理对象调用原始方法，否则会无限循环
-            System.out.println("after...");
+            System.out.println("after... by CGLig");
             return o1;
         }
         return methodProxy.invokeSuper(o,objects);
