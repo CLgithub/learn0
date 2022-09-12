@@ -18,6 +18,7 @@
         <module>2databases</module>
         <module>3JMS</module>
         <module>4spring</module>
+        <module>1bases</module>
     </modules>
 
     <properties>

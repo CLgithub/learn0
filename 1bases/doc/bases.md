@@ -74,10 +74,29 @@
         java -cp ./out/my.jar com.cl.bases.a.A  # 运行
         java -jar ./out/my.jar  # 运行
         ```
-    1. 更新清单文件
+    3. 更新清单文件
         ```
         jar -uvfm ./out/my.jar MANIFEST.MF
         ```
+    * 拓展
+        * SpringBoot启动：
+            * springboot打包的jar，清单文件中主启动类`org.springframework.boot.loader.JarLauncher`
+            * 直接指定类路径，也可以运行
+                ```
+                java -cp xxx-1.0-SAPSHOT1.jar org.springframework.boot.loader.JarLauncher
+                # 
+                ```
+            * 但不能指定自己的主启动类，因为主启动类在xxx/BOOT-INF/classes 下，二不在xxx根下，需解压后，也可以分别指定所有类路径，才可运行
+                ```
+                java -cp \
+                    xxx/:\
+                    xxx/BOOT-INF/classes/:\
+                    xxx/BOOT-INF/lib/spring-boot-autoconfigure-2.6.6.jar:\
+                    xxx/BOOT-INF/lib/spring-boot-2.6.6.jar:\
+                    ...\
+                     com.cl.learn.Application
+                ```
+        * [包含自定义jar打包](https://github.com/CLgithub/Intellij_SpringBoot_Rebuild-Lib)
 4. 运行
     各个参数结合jvm
     
