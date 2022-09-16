@@ -6,7 +6,7 @@ import org.springframework.cglib.proxy.MethodProxy;
 import java.lang.reflect.Method;
 
 /**
- * 自定义方法拦截器
+ * CGLib自定义方法拦截器
  * @Author l
  * @Date 2022/9/12 15:14
  */
