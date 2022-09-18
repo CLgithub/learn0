@@ -101,3 +101,23 @@
     各个参数结合jvm
     
 ## JDK 与 CGLIB 动态代理
+### CGLIB
+* 使用：
+    ```
+    // 1 创建增强器
+    Enhancer enhancer=new Enhancer();
+    // 2 设置要被代理的类
+    enhancer.setSuperclass(clazz);
+    // 3 设置自定义方法拦截器
+    enhancer.setCallback(new MyMethodInterceptor());
+    // 4 创建代理对象
+    T t= (T) enhancer.create();
+    ```
+* 原理：
+整体思路：
+    * 创建增强器，将 被代理对象 自定义方法拦截器 封装为一个key
+    * 根据key，确定代理类前缀等信息，创建代理类 `data = new ClassLoaderData(loader);`
+    * 得到代理类的`CGLIB$SET_THREAD_CALLBACKS`方法 并用`null 去 invoke`该方法(static的)
+        * 代理类的`CGLIB$SET_THREAD_CALLBACKS`方法，对`ThreadLocal进行了set(callback[])`设置自定义方法拦截器，备用
+    * 创建代理类 `ReflectUtils.newInstance(type);` asm相关知识
+    * 从而在代理对象调用test方法时，能解释获取到自定义的callback，并执行其中的intercept方法，从而实现增强

@@ -1,7 +1,7 @@
 package com.cl.learn.cglib;
 
 import org.springframework.cglib.proxy.Enhancer;
-import org.springframework.cglib.proxy.Factory;
+//import com.cl.learn.source.org.springframework.cglib.proxy.Enhancer;
 
 import java.lang.reflect.Proxy;
 
@@ -56,6 +56,8 @@ import java.lang.reflect.Proxy;
         protected Object create(Object key) {
             try{
                 ...
+                data = new ClassLoaderData(loader); // 获取代理类
+                ...
                 this.key = key;
                 Object obj = data.get(this, getUseCache()); // 获取代理类
                 if (obj instanceof Class) {     // obj 如果是个类
@@ -68,7 +70,7 @@ import java.lang.reflect.Proxy;
             protected Object firstInstance(Class type) throws Exception {
                 ...
                 else {
-                    return createUsingReflection(type);
+                    return createUsingReflection(type); // 创建代理对象
                 }
             }
                 private Object createUsingReflection(Class type) {
@@ -79,7 +81,7 @@ import java.lang.reflect.Proxy;
                         if (argumentTypes != null) {
                             return ReflectUtils.newInstance(type, argumentTypes, arguments);
                         } else {
-                            return ReflectUtils.newInstance(type);
+                            return ReflectUtils.newInstance(type); //生成代理对象
                         }
                     }
                     finally {
@@ -88,12 +90,29 @@ import java.lang.reflect.Proxy;
                     }
                 }
 
+            获取代理类：
+                data = new ClassLoaderData(loader);
+                    Class klass = gen.generate(ClassLoaderData.this);
+                        Enhancer 中重写 generate方法
+                        @Override
+                        protected Class generate(ClassLoaderData data) {
+                            validate();
+                            if (superclass != null) {
+                                setNamePrefix(superclass.getName()); // 设置代理类前缀
+                            }
+                            else if (interfaces != null) {
+                                setNamePrefix(interfaces[ReflectUtils.findPackageProtected(interfaces)].getName());
+                            }
+                            return super.generate(data);
+                        }
+
  整体思路
     创建增强器Enhancer对象，并设置自定义方法拦截器callback，设置需要代理的对象
+    创建代理类：data = new ClassLoaderData(loader);
     使用Enhancer 得到代理类
         得到代理类的之后，获取代理类的 CGLIB$SET_THREAD_CALLBACKS 方法 并 用 null 去 invoke 该方法(static的)
         代理类的 CGLIB$SET_THREAD_CALLBACKS 方法 对ThreadLocal进行了set(callback[])
-
+    创建代理对象 ReflectUtils.newInstance(type);
     从而在代理对象调用test方法时，能解释获取到自定义的callback，并执行其中的intercept方法，从而实现增强
 
 
@@ -118,6 +137,8 @@ public class Main {
 //        UserService userService_proxy = userJDKProxy(UserService.class, userService);
         userService_proxy.test();
         userService_proxy.test2();
+
+//        ClassLoader classLoader = Main.class.getClassLoader();
 
     }
 
