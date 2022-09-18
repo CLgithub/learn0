@@ -101,6 +101,7 @@
     各个参数结合jvm
     
 ## JDK 与 CGLIB 动态代理
+[参考](https://www.yuque.com/renyong-jmovm/dadudu/bnfwbc)
 ### CGLIB
 * 使用：
     ```
@@ -121,3 +122,7 @@
         * 代理类的`CGLIB$SET_THREAD_CALLBACKS`方法，对`ThreadLocal进行了set(callback[])`设置自定义方法拦截器，备用
     * 创建代理类 `ReflectUtils.newInstance(type);` asm相关知识
     * 从而在代理对象调用test方法时，能解释获取到自定义的callback，并执行其中的intercept方法，从而实现增强
+        * 自定义方法拦截器中执行方法
+        * 正常invoke需要走反射，比较慢
+        * methodProxy.invoke 或 methodProxy.invokeSuper，最根本都是去执行 Fast类的invoke
+        * Fast类中对方法标注下标，invoke时不走反射，直接根据下标去找到对应方法执行

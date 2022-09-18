@@ -25,7 +25,12 @@ public class MyMethodInterceptor implements MethodInterceptor {
         if(method.getName().equals("test")){
             System.out.println(o.getClass());
             System.out.println("before... by CGLib");
-            Object o1 = methodProxy.invokeSuper(o, objects); // 注意需要方法代理对象调用原始方法，否则会无限循环
+            // 注意需要 方法代理对象 调用 原始方法 ，否则会无限循环
+            // 正常invoke时，正常时走反射，比较慢
+            // methodProxy.invoke 或 methodProxy.invokeSuper，最根本都是去执行 Fast类的invoke
+            // UserServiceImpl$$FastClassByCGLIB$$cf78a71b fast(快速)，
+            // methodProxy.invoke时，并没有真的去走反射，而是根据方法下标找到方法直接执行
+            Object o1 = methodProxy.invokeSuper(o, objects);
             System.out.println("after... by CGLig");
             return o1;
         }
