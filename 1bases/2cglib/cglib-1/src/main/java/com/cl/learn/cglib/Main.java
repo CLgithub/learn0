@@ -133,8 +133,10 @@ public class Main {
         userService.test2();
 
         // 执行代理对象方法
-        UserService userService_proxy = userCglib(UserServiceImpl.class);
-//        UserService userService_proxy = userJDKProxy(UserService.class, userService);
+//        UserService userService_proxy = userCglib(UserServiceImpl.class);
+
+        UserService userService_proxy= (UserService) Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), UserServiceImpl.class.getInterfaces(), new MyInvocationHandler(userService));
+
         userService_proxy.test();
         userService_proxy.test2();
 
@@ -153,11 +155,6 @@ public class Main {
         // 4 利用enhancer 创建代理对象
         T t= (T) enhancer.create();
         return t;
-    }
-
-    private static <T> T userJDKProxy(Class<T> clazz, T t) throws InstantiationException, IllegalAccessException {
-        T t_proxy = (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[]{clazz}, new MyInvocationHandler(t));
-        return t_proxy;
     }
 
 
