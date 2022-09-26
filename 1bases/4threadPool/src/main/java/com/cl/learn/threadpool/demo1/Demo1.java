@@ -13,7 +13,7 @@ public class Demo1 {
         ExecutorService executorService=Executors.newFixedThreadPool(5); // fixed固定的
 //        ThreadPoolExecutor executorService= (ThreadPoolExecutor) Executors.newFixedThreadPool(5); // fixed固定的
         for (int i = 0; i < 10; i++) {
-            executorService.submit(new Thread1());
+            executorService.submit(new Thread1(i));
 //            System.out.println(executorService.getQueue().size());
         }
         System.out.println("abc");

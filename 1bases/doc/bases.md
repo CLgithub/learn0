@@ -125,6 +125,7 @@
         * 自定义方法拦截器中执行方法
         * 正常invoke需要走反射，比较慢
         * methodProxy.invoke 或 methodProxy.invokeSuper，最根本都是去执行 Fast类的invoke
+
         * Fast类中对方法标注下标，invoke时不走反射，直接根据下标去找到对应方法执行
 
 ## 3.反射以及字节码
@@ -132,3 +133,5 @@
 ### 反射（待填）
 
 ## 4.线程池
+* 线程池线程获取流程，[详情](../4threadPool/src/main/java/com/cl/learn/threadpool/ExecutorsTest.java)
+<img src='./images/1.png'>
