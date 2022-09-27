@@ -55,10 +55,18 @@ import java.util.concurrent.*;
  *
  * int cpuNum = Runtime.getRuntime().availableProcessors();    // 获取cpu个数
  *
+ * 线程池监控
+ *      ThreadPoolExecutor 自带的一些方法
+ *          1. long getTaskCount()，获取已经执行或正在执行的任务数
+ *          2. long getCompletedTaskCount()，获取已经执行的任务数
+ *          3. int getLargestPoolSize()，获取线程池曾经创建过的最大线程数，根据这个参数，我们可以知道线程池是否满过
+ *          4. int getPoolSize()，获取线程池线程数
+ *          5. int getActiveCount()，获取活跃线程数（正在执行任务的线程数)
+ *
  */
 public class ExecutorsTest {
     public static void main(String[] args) throws InterruptedException {
-        ExecutorService executorService = createMyPool1();
+        ThreadPoolExecutor executorService = createMyPool1();
         for (int i = 0; i < 10; i++) {
             Thread.sleep(100);
             Future<?> future = executorService.submit(new Thread1(i));
@@ -68,18 +76,14 @@ public class ExecutorsTest {
     }
 
     /**
-     * 先放core执行
-     * core满了
-     *
      *
      */
-    public static ExecutorService createMyPool1(){
+    public static ThreadPoolExecutor createMyPool1(){
         ThreadPoolExecutor threadPoolExecutor=new ThreadPoolExecutor(2,
                 3,
                 30, TimeUnit.SECONDS,
-                new ArrayBlockingQueue<>(100),
+                new ArrayBlockingQueue<>(2),
                 new ThreadPoolExecutor.CallerRunsPolicy()
-
         );
         return threadPoolExecutor;
         // 111 --- 0(2) 1(4) 3(6) 5(8) 7 9
@@ -98,6 +102,7 @@ public class ExecutorsTest {
         // 231 --- 013(4) 256(8) 79
         // 222 --- 01(4) 23(7) 56 89
         // 352 --- 01256(7) 3489
+        // 232 --- 014(5) 236(9) 78
 
     }
 
