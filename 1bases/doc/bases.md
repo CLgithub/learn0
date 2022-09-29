@@ -114,7 +114,7 @@
     java -Xms1024M -Xmx2048M -Xss128M -jar my.jar   # 堆初始化1G最大2G，栈128M运行
     java -Xms1024M -Xmx2048M -Xss128M -cp my.jar com.cl.bases.a.A
     ```
-
+5. 堆大小设置结合GC
 
     
     
