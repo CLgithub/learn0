@@ -15,27 +15,27 @@ import java.time.Duration;
 @Component
 public class Task implements CommandLineRunner {
 
-    @Resource(name = "kafkaConsumer1")
-    private KafkaConsumer kafkaConsumer1;
-    @Resource(name = "kafkaConsumer2")
-    private KafkaConsumer kafkaConsumer2;
-
+//    @Resource(name = "kafkaConsumer1")
+//    private KafkaConsumer kafkaConsumer1;
+//    @Resource(name = "kafkaConsumer2")
+//    private KafkaConsumer kafkaConsumer2;
+//
     @Override
     public void run(String... args) throws Exception {
-       test1();
+//       test1();
     }
-
-    private void test1() {
-        while (true){
-            ConsumerRecords poll = kafkaConsumer1.poll(Duration.ofSeconds(1));
-            for (Object o : poll) {
-                System.out.println("consumer1:"+o);
-            }
-            ConsumerRecords poll2 = kafkaConsumer2.poll(Duration.ofSeconds(1));
-            for (Object o : poll2) {
-                System.out.println("consumer2:"+o);
-            }
-        }
-    }
+//
+//    private void test1() {
+//        while (true){
+//            ConsumerRecords poll = kafkaConsumer1.poll(Duration.ofSeconds(1));
+//            for (Object o : poll) {
+//                System.out.println("consumer1:"+o);
+//            }
+//            ConsumerRecords poll2 = kafkaConsumer2.poll(Duration.ofSeconds(1));
+//            for (Object o : poll2) {
+//                System.out.println("consumer2:"+o);
+//            }
+//        }
+//    }
 
 }

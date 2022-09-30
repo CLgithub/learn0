@@ -44,7 +44,7 @@ public class Task implements CommandLineRunner {
     public void run(String... args) throws Exception {
         SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String dateStr = simpleDateFormat.format(new Date());
-        test1(dateStr);
+//        test1(dateStr);
 //        Producer producer = defaultKafkaProducerFactory.createProducer();
         test2(dateStr,  kafkaProducer);
         defaultKafkaProducerFactory.closeThreadBoundProducer();
@@ -70,16 +70,20 @@ public class Task implements CommandLineRunner {
         try {
             for(int i=1; i<10; i++){
                 String value=dateStr+"---"+i;
-                kafkaProducer.send(new ProducerRecord(topics[0], value), new Callback() {
-                    @Override
-                    public void onCompletion(RecordMetadata metadata, Exception exception) {
-                        if (exception==null){
-                            System.out.println("通过kafkaProducer成功写入：topic="+metadata.topic()+",partition="+metadata.partition()+",offset="+metadata.offset()+",value="+value);
-                        }else {
-                            System.out.println("通过kafkaProducer写入有误："+exception);
+                for(String topic:topics){
+                    String finalValue =topic+"_"+value;
+                    kafkaProducer.send(new ProducerRecord(topic, finalValue), new Callback() {
+                        @Override
+                        public void onCompletion(RecordMetadata metadata, Exception exception) {
+                            if (exception==null){
+                                System.out.println("通过kafkaProducer成功写入：topic="+metadata.topic()+",partition="+metadata.partition()+",offset="+metadata.offset()+",value="+ finalValue);
+                            }else {
+                                System.out.println("通过kafkaProducer写入有误："+exception);
+                            }
                         }
-                    }
-                });   // 发送数据
+                    });   // 发送数据
+
+                }
 //                if(i%10==0){
 //                    kafkaProducer.commitTransaction();
 //                    kafkaProducer.beginTransaction(); //2 开启事务
