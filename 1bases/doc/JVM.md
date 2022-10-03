@@ -29,8 +29,8 @@ C/C++编写，`本地方法栈`是这些方法运行区域，如`Object.clone()`
 * 问题：
      * `方法区`内存溢出`OutOfMemoryError: PermGenspace/Matespace`：
         * 类加载器，加载了很多类
-            * `1.6`以前是`OutOfMemoryError: PermGen space(永久带)`
-            * `1.8`以后`OutOfMemoryError: Matespace（元空间）`
+            * `1.6`以前是`OutOfMemoryError: PermGen space(永久带)`[样例](../0JVM/MethodArea)
+            * `1.8`以后`OutOfMemoryError: Matespace（元空间）`[样例](../0JVM/MethodArea)
     * `堆`内存溢出`'OutOfMemoryError: Java heap space'`
         * 产生了太多对象实例，一直引用着，没有被`GC`回收
      * `虚拟机栈`内存溢出 `StackOverflowError`：

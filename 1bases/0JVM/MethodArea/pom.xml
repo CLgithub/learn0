@@ -3,17 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>1bases</artifactId>
+        <artifactId>0JVM</artifactId>
         <groupId>com.cl.learn</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>0JVM</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>MethodArea</module>
-    </modules>
+    <artifactId>MethodArea</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -21,10 +17,11 @@
     </properties>
 
     <dependencies>
+        <!-- asm -->
         <dependency>
-            <groupId>org.nd4j</groupId>
-            <artifactId>jackson</artifactId>
-            <version>1.0.0-beta2</version>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>9.1</version>
         </dependency>
     </dependencies>
 
