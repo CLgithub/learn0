@@ -5,29 +5,31 @@ import java.util.ArrayList;
 import java.util.StringJoiner;
 
 /**
- * @Author l
- * @Date 2022/9/29 10:26
+ * 堆内存溢出：java.lang.OutOfMemoryError: Java heap space
+ *      对象太多
+ *      对象太大
+ *
  */
 public class OutOfMemoryErrorHead {
-    private String date;
+    private String data;
 
-    public String getDate() {
-        return date;
+    public String getData() {
+        return data;
     }
 
-    public void setDate(String date) {
-        this.date = date;
+    public void setData(String data) {
+        this.data = data;
     }
 
     public static void main(String[] args) {
-//        setDate();
-        test2();
+        setDate();
+//        test2();
     }
 
     @Override
     public String toString() {
         return new StringJoiner(", ", OutOfMemoryErrorHead.class.getSimpleName() + "[", "]")
-                .add("date='" + date + "'")
+                .add("date='" + data + "'")
                 .toString();
     }
 
@@ -61,7 +63,7 @@ public class OutOfMemoryErrorHead {
                 stringBuffer.append(str);
             }
             OutOfMemoryErrorHead bigObject = new OutOfMemoryErrorHead();
-            bigObject.setDate(stringBuffer.toString());
+            bigObject.setData(stringBuffer.toString());
             System.out.println(bigObject);
 
         } catch (Exception e) {

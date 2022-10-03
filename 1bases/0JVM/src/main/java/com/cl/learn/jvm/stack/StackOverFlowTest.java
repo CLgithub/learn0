@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.StringJoiner;
 
 /**
- * @Author l
- * @Date 2022/9/29 10:56
+ * 栈内存溢出：stackOverFlowError
+ *      栈帧太大
  */
 public class StackOverFlowTest {
     public static void main(String[] args) throws JsonProcessingException {
