@@ -52,14 +52,20 @@ C/C++编写，`本地方法栈`是这些方法运行区域，如`Object.clone()`
     * 根对象：肯定不能被当成垃圾回收的对象，
         * 可通过可视化工具`Memory Analyzer`查看
     * 对堆中的所有对象进行扫描，判断每个对象是否能被根对象直接或间接的引用，如果是，就不能被回收，否则就可以做为垃圾回收
-2. 五种引用
+2. 四种引用
     1. 强引用
-        代码中用「`=` 」赋值的
-    2. 软引用
-    3. 弱引用
-    4. 虚引用
-    5. 终结器引用
-
+        * 最普通的引用，代码中用「`=` 」赋值的
+    2. 软引用 [演示](../0JVM/src/main/java/com/cl/learn/jvm/reference/T02_SoftReference.java)
+        * 概念：不是那么强硬的引用，当堆空间不足时，即使对象还被软引用着，也可以被回收
+        * 作用：非常适合当缓存
+    3. 弱引用 [演示](../0JVM/src/main/java/com/cl/learn/jvm/reference/T03_WeakReference.java)
+        * 概念：遭到GC就会回收
+        * 作用：为了解决某些地方的内存泄漏问题，和`ThreadLocal`有联系，待填
+    4. 虚引用 [演示](../0JVM/src/main/java/com/cl/learn/jvm/reference/T04_PhantomReference.java)
+        * 概念：虚假的引用，一个对象被虚引用的目的是这个对象被收集器回收时收到一个系统通知，通知会放入一个队列
+        * 作用：管理堆外内存
+            <img src='./images/8.png'>
+            
 ### 垃圾回收算法
 1. 标记清除
     * 步骤：
