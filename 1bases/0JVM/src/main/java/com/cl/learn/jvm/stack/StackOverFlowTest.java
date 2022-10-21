@@ -1,33 +1,21 @@
 package com.cl.learn.jvm.stack;
 
 import org.nd4j.shade.jackson.core.JsonProcessingException;
-import org.nd4j.shade.jackson.databind.ObjectMapper;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.StringJoiner;
 
 /**
  * 栈内存溢出：stackOverFlowError
- *      栈帧太大
+ *      栈帧太大:两个对象相互引用，toString时
  */
 public class StackOverFlowTest {
     public static void main(String[] args) throws JsonProcessingException {
         B b = new B();
-        A a1 = new A();
-        a1.setB(b);
-        A a2 = new A();
-        a2.setB(b);
+        A a = new A();
+        a.setB(b);
+        b.setA(a);
+        System.out.println(a);
 
-        ArrayList<A> as = new ArrayList<>();
-        as.add(a1);
-        as.add(a2);
-        b.setList(as);
-
-
-        ObjectMapper objectMapper=new ObjectMapper();
-        String value = objectMapper.writeValueAsString(b);
-        System.out.println(value);
     }
 }
 
@@ -45,26 +33,28 @@ class A{
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", A.class.getSimpleName() + "[", "]")
-                .add("b=" + b)
-                .toString();
+        final StringBuffer sb = new StringBuffer("A{");
+        sb.append("b=").append(b);
+        sb.append('}');
+        return sb.toString();
     }
 }
 class B{
-    private List<A> list;
+    private A a;
 
-    public List<A> getList() {
-        return list;
+    public A getA() {
+        return a;
     }
 
-    public void setList(List<A> list) {
-        this.list = list;
+    public void setA(A a) {
+        this.a = a;
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", B.class.getSimpleName() + "[", "]")
-                .add("list=" + list)
-                .toString();
+        final StringBuffer sb = new StringBuffer("B{");
+        sb.append("a=").append(a);
+        sb.append('}');
+        return sb.toString();
     }
 }

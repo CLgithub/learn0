@@ -11,27 +11,13 @@ import java.util.StringJoiner;
  *
  */
 public class OutOfMemoryErrorHead {
-    private String data;
 
-    public String getData() {
-        return data;
-    }
-
-    public void setData(String data) {
-        this.data = data;
-    }
 
     public static void main(String[] args) {
-        setDate();
-//        test2();
+//        setDate();
+        test2();
     }
 
-    @Override
-    public String toString() {
-        return new StringJoiner(", ", OutOfMemoryErrorHead.class.getSimpleName() + "[", "]")
-                .add("date='" + data + "'")
-                .toString();
-    }
 
     /**
      * 对象过多
@@ -40,7 +26,7 @@ public class OutOfMemoryErrorHead {
         ArrayList<String> list= new ArrayList<>();
         String str1="a";
         String str2="b";
-        int i=0;
+        long i=0;
         while (true){
             String str3=str1+str2;
             list.add(str3);
@@ -56,15 +42,15 @@ public class OutOfMemoryErrorHead {
         String filePath="/Users/l/develop/ultrapower/ultrapowerBin/pmDataUp/log/cmccCollectServer.log";
         BufferedReader bufferedReader=null;
         StringBuffer stringBuffer=new StringBuffer();
+        int i=0;
         try {
             bufferedReader=new BufferedReader(new InputStreamReader(new FileInputStream(filePath),"GBK"));
             for(String str ="";str!=null;){
+                System.out.println(i++);
                 str=bufferedReader.readLine();
                 stringBuffer.append(str);
             }
-            OutOfMemoryErrorHead bigObject = new OutOfMemoryErrorHead();
-            bigObject.setData(stringBuffer.toString());
-            System.out.println(bigObject);
+
 
         } catch (Exception e) {
             e.printStackTrace();

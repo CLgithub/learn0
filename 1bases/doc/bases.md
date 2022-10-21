@@ -12,7 +12,7 @@
     public class A{    
         public static void main(String[] args) throws InterruptedException{
             while(true){
-                System.out.println(sdf.format(new Date()));
+                System.out.println(Utils.SDF1.format(new Date()));
                 Thread.sleep(1000);
             }
         }
