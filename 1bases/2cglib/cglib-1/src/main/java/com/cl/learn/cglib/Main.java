@@ -133,9 +133,9 @@ public class Main {
         userService.test2();
 
         // 执行代理对象方法
-        UserService userService_proxy = userCglib(UserServiceImpl.class);
+//        UserService userService_proxy = userCglib(UserServiceImpl.class);
 
-//        UserService userService_proxy= (UserService) Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), UserServiceImpl.class.getInterfaces(), new MyInvocationHandler(userService));
+        UserService userService_proxy= (UserService) Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), UserServiceImpl.class.getInterfaces(), new MyInvocationHandler(userService));
 
         userService_proxy.test();
         userService_proxy.test2();

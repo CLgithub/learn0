@@ -18,7 +18,7 @@ import java.util.concurrent.*;
  *                               long keepAliveTime,        // 空闲时间，超过核心线程数的线程的存活时间
  *                               TimeUnit unit,             // 空闲时间单位
  *                               BlockingQueue<Runnable> workQueue,     // 等待队列，当线程池中的数量超过核心线程数
- *                               ThreadFactory threadFactory,           // 线程工程
+ *                               ThreadFactory threadFactory,           // 线程工厂
  *                               RejectedExecutionHandler handler)      // 拒绝策略，当线程池和等待队列都满后，通过该对象的回调函数进行回调处理
  *
  * 重点看 等待队列 线程工程 拒绝策略
@@ -29,7 +29,7 @@ import java.util.concurrent.*;
  *          SynchronousQueue    不存储元素的阻塞队列，每个插入操作必须等到另一个线程调用移除操作，否则插入操作将一直处于阻塞状态. newCachedThreadPool 默认使用该队列
  *          PriorityBlockingQueue   带优先级的无界阻塞队列
  *  通常情况，我们需要指定阻塞队列的上界
- * 线程工程 ThreadFactory
+ * 线程工厂 ThreadFactory
  *      一个接口，作用是创建线程，Runnable子类最终要执行，需要 new Thread(Runnable r)，该参数即做这事
  *      不指定时，默认使用Executors#DefaultThreadFactory
  *              默认线程名为：pool-{poolNum}-thread-{threadNum}
@@ -63,10 +63,16 @@ import java.util.concurrent.*;
  *          4. int getPoolSize()，获取线程池线程数
  *          5. int getActiveCount()，获取活跃线程数（正在执行任务的线程数)
  *
+ * 参考：
+ *  https://www.jianshu.com/p/7ab4ae9443b9
+ *  https://www.cnblogs.com/trust-freedom/p/6693601.html
+ *
+ *
+ *
  */
 public class ExecutorsTest {
     public static void main(String[] args) throws InterruptedException {
-        ThreadPoolExecutor executorService = createMyPool1();
+        ExecutorService executorService = createMyPool1();
         for (int i = 0; i < 10; i++) {
             Thread.sleep(100);
             Future<?> future = executorService.submit(new Thread1(i));
@@ -79,7 +85,7 @@ public class ExecutorsTest {
      *
      */
     public static ThreadPoolExecutor createMyPool1(){
-        ThreadPoolExecutor threadPoolExecutor=new ThreadPoolExecutor(2,
+        ThreadPoolExecutor threadPoolExecutor=new ThreadPoolExecutor(1,
                 3,
                 30, TimeUnit.SECONDS,
                 new ArrayBlockingQueue<>(2),

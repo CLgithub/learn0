@@ -18,7 +18,7 @@
 
 ### 1、redis
 
-### 2、kafka
+### 2、kafka✅
 
 ### 3、es
 
