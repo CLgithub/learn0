@@ -153,3 +153,16 @@
 ## 4.线程池
 * 线程池线程获取流程，[详情](../4threadPool/src/main/java/com/cl/learn/threadpool/ExecutorsTest.java)
 <img src='./images/1.png'>
+
+## 5.内部类
+
+### 修饰符
+
+|  | public|protected|default|private|
+|:--|:--|:--|:--|:--|
+|同一个类|✅|✅|✅|✅|
+|同一个包|✅|✅|✅|❌|
+|子类|✅|✅|❌|❌|
+|其他包|✅|❌|❌|❌|
+
+特殊的：protected，子类对象才能访问，若是静态变量，父类子类都可以直接访问
