@@ -5,6 +5,7 @@ import com.cl.learn.factorypattern.abstractfactory.factory.MacFactory;
 import com.cl.learn.factorypattern.abstractfactory.product.Keyboard;
 
 /**
+ * 抽象工厂模式：在工厂方法模式的基础上，将一系列产品放到同一个子实现类中去进行
  * @Author l
  * @Date 2022/3/19 21:02
  */

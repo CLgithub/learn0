@@ -1,7 +1,7 @@
-package com.cl.learn.factorypattern.factorymethod;
+package com.cl.learn.factorypattern.factory_3factorymethod;
 
-import com.cl.learn.factorypattern.ordinary.Operation;
-import com.cl.learn.factorypattern.ordinary.OperationSub;
+import com.cl.learn.factorypattern.factory_0ordinary.Operation;
+import com.cl.learn.factorypattern.factory_0ordinary.OperationSub;
 
 /**
  * @Author l

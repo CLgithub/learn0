@@ -1,6 +1,6 @@
-package com.cl.learn.factorypattern.simpfactory;
+package com.cl.learn.factorypattern.factory_1simpfactory;
 
-import com.cl.learn.factorypattern.ordinary.Operation;
+import com.cl.learn.factorypattern.factory_0ordinary.Operation;
 
 /**
  * 简单工厂模式

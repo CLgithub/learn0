@@ -1,6 +1,6 @@
-package com.cl.learn.factorypattern.simpfactory;
+package com.cl.learn.factorypattern.factory_1simpfactory;
 
-import com.cl.learn.factorypattern.ordinary.*;
+import com.cl.learn.factorypattern.factory_0ordinary.*;
 
 /**
  * 工厂类，用于创建对象

@@ -1,4 +1,4 @@
-package com.cl.learn.factorypattern.ordinary;
+package com.cl.learn.factorypattern.factory_0ordinary;
 
 /**
  * @Author l

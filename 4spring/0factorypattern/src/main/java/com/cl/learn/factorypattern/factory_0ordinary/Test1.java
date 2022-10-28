@@ -1,4 +1,4 @@
-package com.cl.learn.factorypattern.ordinary;
+package com.cl.learn.factorypattern.factory_0ordinary;
 
 /**
  * 定义一个计数器，算法之间解耦
