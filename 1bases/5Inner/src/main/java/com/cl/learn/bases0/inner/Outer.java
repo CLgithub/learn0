@@ -1,4 +1,4 @@
-package com.cl.learn.inner;
+package com.cl.learn.bases0.inner;
 
 /**
  * 内部类整理：

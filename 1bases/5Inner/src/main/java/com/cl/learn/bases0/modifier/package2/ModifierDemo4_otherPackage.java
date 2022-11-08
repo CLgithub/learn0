@@ -1,6 +1,6 @@
-package com.cl.learn.modifier.package2;
+package com.cl.learn.bases0.modifier.package2;
 
-import com.cl.learn.modifier.package1.ModifierDemo1_class;
+import com.cl.learn.bases0.modifier.package1.ModifierDemo1_class;
 
 /**
  *
