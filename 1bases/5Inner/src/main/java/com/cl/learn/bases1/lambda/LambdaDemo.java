@@ -6,7 +6,7 @@ import java.util.Currency;
 
 /**
  lambda 表达式
-    核心：数作为基本运算单元，函数可以作为变量，可以接收函数，还可以返回函数
+    核心：函数作为基本运算单元，函数可以作为变量，可以接收函数，还可以返回函数
  很多单方法接口
  如：
  Comparator
@@ -33,7 +33,8 @@ public class LambdaDemo {
 //            }
 //        });
         // 反向排序 使用lambda表达式 只需要写出方法定义，将该方法当作参数传入到Arrays.sort(T[] a, Comparator<? super T> c)的第二个参数
-        Arrays.sort(arr, (o1,o2)->{return o2.compareTo(o1);});
+//        Arrays.sort(arr, (o1,o2)->{return o2.compareTo(o1);});
+        Arrays.sort(arr, (o1,o2)->o2.compareTo(o1));
         System.out.println(Arrays.toString(arr));
 
     }
@@ -77,7 +78,8 @@ public class LambdaDemo {
 //            }
 //        }, 2);
 
-        int i=myInterface2.m2(()->{return 2;},1);
+//        int i=myInterface2.m2(()->{return 2;},1);
+        int i=myInterface2.m2(()->2,1);
         System.out.println(i);
 
     }

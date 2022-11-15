@@ -538,11 +538,14 @@ no-appendfsync-on-rewrite yes/no   # 在重写时，不同步aof_buf到appendonl
 * 只要硬盘许可，应该尽量减少AOF rewrite的频率，AOF重写的基础大小默认值64M太小了，可以设到5G以上
 * 默认超过原大小100%大小时重写可以改到适当的数值
 
+## redis安装
+* 官网下载包
+* 本地编译/安装，会安装到/usr/local/bin
 
 ## 主从复制
 * 能干嘛
     * 读写分离，性能扩展
-    * 荣宅快速恢复
+    * 容灾快速恢复
     <img src='./images/11.png'>
     
 * 怎么玩

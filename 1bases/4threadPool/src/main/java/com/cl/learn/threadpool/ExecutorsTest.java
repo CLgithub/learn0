@@ -67,6 +67,12 @@ import java.util.concurrent.*;
  *  https://www.jianshu.com/p/7ab4ae9443b9
  *  https://www.cnblogs.com/trust-freedom/p/6693601.html
  *
+ * 线程池5个状态
+ *      running: 正常运行状态
+ *      shutdown: 不接收新任务，在队列中的任务继续执行
+ *      stop: 直接停止
+ *      tidying: 整理状态，线程池中没有真正工作的线程 shutdown和stop后自动发生
+ *      terminated: 最终终止 tidying状态后会执行terminated()方法，子类中可自定义
  *
  *
  */
@@ -85,7 +91,7 @@ public class ExecutorsTest {
      *
      */
     public static ThreadPoolExecutor createMyPool1(){
-        ThreadPoolExecutor threadPoolExecutor=new ThreadPoolExecutor(1,
+        ThreadPoolExecutor threadPoolExecutor=new MyThreadPoolExecutor(1,
                 3,
                 30, TimeUnit.SECONDS,
                 new ArrayBlockingQueue<>(2),
@@ -110,8 +116,20 @@ public class ExecutorsTest {
         // 352 --- 01256(7) 3489
         // 232 --- 014(5) 236(9) 78
 
+
     }
 
+    static class MyThreadPoolExecutor extends ThreadPoolExecutor {
+        public MyThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, CallerRunsPolicy callerRunsPolicy) {
+            super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, callerRunsPolicy);
+        }
+        // 线程停止后会调用该方法，默认是空方法，子类自定义覆盖
+
+        @Override
+        protected void terminated() {
+            System.out.println("终止 terminated");
+        }
+    }
 
 
 
