@@ -278,7 +278,7 @@ kafka启动流程：
             (2) --topic topicA
             (3) --create #增
             (4) --delete #删
-            (5) --alter #该
+            (5) --alter #改
             (6) --list  #查
             (7) --describe #查
             (8) --partitions 3 # 指定分区数

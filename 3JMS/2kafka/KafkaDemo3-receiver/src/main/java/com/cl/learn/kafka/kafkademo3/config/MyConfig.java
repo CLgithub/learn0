@@ -92,7 +92,7 @@ public class MyConfig {
         DefaultKafkaConsumerFactory<Integer, String> dkConsumerFactory = new DefaultKafkaConsumerFactory<>(map);
         ConcurrentMessageListenerContainer concurrentMessageListenerContainer = new ConcurrentMessageListenerContainer(dkConsumerFactory, containerProps);
 
-        concurrentMessageListenerContainer.setConcurrency(9);
+        concurrentMessageListenerContainer.setConcurrency(9); // 允许的最大现场数
         int concurrency = concurrentMessageListenerContainer.getConcurrency();
         System.out.println("concurrency:"+concurrency);
         return concurrentMessageListenerContainer;
