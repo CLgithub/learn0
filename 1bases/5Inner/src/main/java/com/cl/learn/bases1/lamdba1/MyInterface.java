@@ -1,4 +1,4 @@
-package com.cl.learn.bases1.lambda;
+package com.cl.learn.bases1.lamdba1;
 
 /**
  * @Author l
@@ -7,7 +7,7 @@ package com.cl.learn.bases1.lambda;
 @FunctionalInterface
 public interface MyInterface {
 
-    int m1();
+    int m1(Integer s1, Integer s2);
 
 //    int test();
 }
