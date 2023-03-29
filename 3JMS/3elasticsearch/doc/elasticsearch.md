@@ -20,8 +20,12 @@
 * 机器环境配置
     * 使用es自带jdk`bin/elasticsearch-env`，添加以下内容
         ```
-        ES_HOME=/home/l/develop/elasticsearch-7.17.5
-        ES_JAVA_HOME=/home/l/develop/elasticsearch-7.17.5/jdk
+        ES_HOME=/home/l/develop/elasticsearch-7.17.9
+        ES_JAVA_HOME=/home/l/develop/elasticsearch-7.17.9/jdk
+        
+        # 在~/.bashrc 中添加一下内容
+        export ES_HOME=/home/l/app/elasticsearch-7.17.9
+        export ES_JAVA_HOME=/home/l/app/elasticsearch-7.17.9/jdk
         ```
         * `config/jvm.options`文件，修改
             ```
@@ -63,7 +67,7 @@
         ```
 * 启动
 ```
-bin/elasticsearch
+nohup ./bin/elasticsearch >/dev/null &
 ```
 浏览器访问`http://vubuntu1:9200/_cat/health?v`进行查看
 ### Kibana
@@ -171,3 +175,14 @@ bin/elasticsearch
           "text":"中华人民共和国"
         }
     ```
+    * analysis-ik分词器版本号必须与es版本相同，若无相同版本，可克隆相近版本自己进行编译：
+        ```
+        git clone https://github.com/medcl/elasticsearch-analysis-ik
+        cd elasticsearch-analysis-ik
+        git pull origin 7.x
+        vi pom.xml # 修改版本号
+        mvn clean
+        mvn compile
+        mvn package
+        # 进入./target/releases
+        ```
