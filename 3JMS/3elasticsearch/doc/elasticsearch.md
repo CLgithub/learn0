@@ -186,3 +186,69 @@ nohup ./bin/elasticsearch >/dev/null &
         mvn package
         # 进入./target/releases
         ```
+    
+### ElasticSearch索引操作
+#### 创建索引
+索引命名必须小写，不能以下划线开头
+格式：`PUT /索引名称`
+```
+# 创建索引
+PUT /es_db
+
+# 查询索引
+GET /es_db
+    
+    ####### 结果 #######
+    {
+      "es_db" : {
+        "aliases" : { },
+        "mappings" : { }, // 当有数据时自动生成
+        "settings" : {
+          "index" : {
+            "routing" : {
+              "allocation" : {
+                "include" : {
+                  "_tier_preference" : "data_content"
+                }
+              }
+            },
+            "number_of_shards" : "1",   // 一个分片
+            "provided_name" : "es_db",  // 索引名
+            "creation_date" : "1680231562307",
+            "number_of_replicas" : "1", // 一个副本
+            "uuid" : "cwZfjyulSbqqxqpjIIoidg",
+            "version" : {
+              "created" : "7170999"
+            }
+          }
+        }
+      }
+    }
+
+
+# 删除索引
+DELETE /es_db
+GET /es_db/_mapping
+
+# 创建索引是可以设置分片数和副本数，3个分片，2个副本
+PUT /es_db 
+{
+  "settings" : {
+    "number_of_shards" : 3,
+    "number_of_replicas" : 2
+  }
+}
+
+# 修改索引配置
+PUT /es_db/_settings
+{
+  "index":{
+    "number_of_replicas" : 1
+  }  
+}
+
+# 检查索引是否存在
+HEAD /es_db
+
+# 左打括号「{」必须另起一行
+```
