@@ -114,8 +114,80 @@
     java -Xms1024M -Xmx2048M -Xss128M -jar my.jar   # 堆初始化1G最大2G，栈128M运行
     java -Xms1024M -Xmx2048M -Xss128M -cp my.jar com.cl.bases.a.A
     ```
-5. 堆大小设置结合GC
+1. 堆大小设置结合GC
 
+### 用maven手动从源文件到jar
+1. 构建项目目录结构
+    ```
+    |-- pom.xml
+    `-- src
+        |-- main
+        |   |-- java
+        |   `-- resources
+        `-- test
+            `-- java
+
+    ```
+2. 在`pom.xml`中写入以下内容：
+    ```
+    <?xml version="1.0" encoding="UTF-8"?>
+    <project xmlns="http://maven.apache.org/POM/4.0.0"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+        <modelVersion>4.0.0</modelVersion>
+    
+        <groupId>com.cl.learn.bases</groupId>
+        <artifactId>srcToJar</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    
+    </project>
+    ```
+3. 在`src/main/java/com/cl/learn/bases/SrcToJar.java`文件文件中写入以下内容：
+    ```
+    package com.cl.learn.bases;
+
+    public class SrcToJar{
+    	public static void main(String[] args){
+    		System.out.println("hello!");
+    	}
+    }
+    ```
+4. 输入命令：
+    ```
+    mvn package # 用maven打包，自动创建target目录
+    java -cp ./target/srcTojar-1.0-SNAPSHOT.jar com.cl.learn.bases.SrcToJar # 指定主启动类启动
+    ```
+* 打包时添加插件添加主清单文件指定主启动类：
+    ```
+    <?xml version="1.0" encoding="UTF-8"?>
+    <project xmlns="http://maven.apache.org/POM/4.0.0"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    	<modelVersion>4.0.0</modelVersion>
+    
+    	<groupId>com.cl.learn.bases</groupId>
+    	<artifactId>srcTojar</artifactId>
+    	<version>1.0-SNAPSHOT</version>
+    
+    	<build>
+    		<plugins>
+    			<plugin>
+    				<groupId>org.apache.maven.plugins</groupId>
+    				<artifactId>maven-jar-plugin</artifactId>
+    				<version>2.4</version>
+    				<configuration>
+    					<archive>
+    					   <!-- 添加主清单文件 -->
+    						<manifest>
+    							<mainClass>com.cl.learn.bases.SrcToJar</mainClass>
+    						</manifest>
+    					</archive>
+    				</configuration>
+    			</plugin>
+    		</plugins>
+    	</build>
+    </project>
+    ```
     
     
 ## 2.JDK 与 CGLIB 动态代理

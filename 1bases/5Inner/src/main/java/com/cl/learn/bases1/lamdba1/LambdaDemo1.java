@@ -1,8 +1,9 @@
 package com.cl.learn.bases1.lamdba1;
 
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * @Author l
@@ -98,6 +99,25 @@ public class LambdaDemo1 {
 
         System.out.println(Arrays.toString(arr));
 
+    }
+
+    // 一个典型的应用
+    public static void test3(){
+        List<String> list=new ArrayList<>();
+        list.add("a");
+        list.add("bb");
+        list.add("c");
+
+//        Collector<String, ?, Map<String, List<String>>> stringMapCollector = Collectors.groupingBy(String::toString);
+//        Collector<String, ?, Map<String, List<String>>> stringMapCollector = Collectors.groupingBy((String s1)->s1.toString());
+//        Collector<String, ?, Map<String, List<String>>> stringMapCollector = Collectors.groupingBy((String s1)->{return s1.toString();});
+
+//        Map<String, List<String>> collect = list.stream().collect(stringMapCollector);
+//        System.out.println(collect);
+
+        Collector<String, ?, Map<Integer, List<String>>> stringMapCollector = Collectors.groupingBy(String::length);
+        Map<Integer, List<String>> collect = list.stream().collect(stringMapCollector);
+        System.out.println(collect);
     }
 
 

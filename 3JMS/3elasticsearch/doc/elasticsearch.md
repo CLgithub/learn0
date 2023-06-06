@@ -186,69 +186,172 @@ nohup ./bin/elasticsearch >/dev/null &
         mvn package
         # 进入./target/releases
         ```
-    
-### ElasticSearch索引操作
-#### 创建索引
-索引命名必须小写，不能以下划线开头
-格式：`PUT /索引名称`
-```
-# 创建索引
-PUT /es_db
+### ElasticSearch vs 关系型数据库区别
+* 7.0之前，一个Index可以设置多个Types，7.0开始，一个索引只能创建一个Type-"_doc"
+<table>
+<tr><td><b>关系型数据库</b></td><td>Table(表)</td><td>Row(行)</td><td>Column(列)</td></tr>
+<tr><td><b>ElasticSearch</b></td><td>Index(索引)</td><td>Document(文档)</td><td>Field(字段)</td></tr>
+</table>
 
-# 查询索引
-GET /es_db
+### ElasticSearch操作
+#### 索引（Index）
+* 索引是拥有相似特征的文档的集合，类似表是拥有相似特征的记录的集合
+    * 比如说，可以有一个客户数据的索引，有一个产品目录的索引，还可以有一个订单数据的索引
+* 索引命名必须小写，不能以下划线开头
+* 一个索引由一个名字来标识(必须全部是小写字母)
+    * 当我们要对对应于这个索引中的文档进行索引、搜索、更新、删除，都要用到这个名字
+* 基本操作
+    ```
+    # 创建索引
+    PUT /es_db
     
-    ####### 结果 #######
-    {
-      "es_db" : {
-        "aliases" : { },
-        "mappings" : { }, // 当有数据时自动生成
-        "settings" : {
-          "index" : {
-            "routing" : {
-              "allocation" : {
-                "include" : {
-                  "_tier_preference" : "data_content"
+    # 查看索引结构
+    GET /es_db
+        
+        ####### 结果 #######
+        {
+          "es_db" : {
+            "aliases" : { },
+            "mappings" : { }, // 当有数据时自动生成
+            "settings" : {
+              "index" : {
+                "routing" : {
+                  "allocation" : {
+                    "include" : {
+                      "_tier_preference" : "data_content"
+                    }
+                  }
+                },
+                "number_of_shards" : "1",   // 一个分片
+                "provided_name" : "es_db",  // 索引名
+                "creation_date" : "1680231562307",
+                "number_of_replicas" : "1", // 一个副本
+                "uuid" : "cwZfjyulSbqqxqpjIIoidg",
+                "version" : {
+                  "created" : "7170999"
                 }
               }
-            },
-            "number_of_shards" : "1",   // 一个分片
-            "provided_name" : "es_db",  // 索引名
-            "creation_date" : "1680231562307",
-            "number_of_replicas" : "1", // 一个副本
-            "uuid" : "cwZfjyulSbqqxqpjIIoidg",
-            "version" : {
-              "created" : "7170999"
             }
           }
         }
+    
+    # 查看索引mapping
+    GET /es_db/_mapping
+    
+    # 删除索引
+    DELETE /es_db
+    GET /es_db/_mapping
+    
+    # 创建索引是可以设置分片数和副本数，3个分片，2个副本
+    PUT /es_db 
+    {
+      "settings" : {
+        "number_of_shards" : 3,
+        "number_of_replicas" : 2
       }
     }
+    
+    # 修改索引配置
+    PUT /es_db/_settings
+    {
+      "index":{
+        "number_of_replicas" : 1
+      }  
+    }
+    
+    # 检查索引是否存在
+    HEAD /es_db
+    
+    # 左打括号「{」必须另起一行
 
 
-# 删除索引
-DELETE /es_db
-GET /es_db/_mapping
+    
+   
+    ```
+#### 文档（Document）
+* Elasticsearch是面向文档的，文档是所有可搜索数据的最小单位
+    * 可以是：日志文件中的日志项/一部电影的具体信息/一张唱片的详细信息/MP3播放器里的一首歌/一篇PDF文档中的具体内容
+* 文档会被序列化成JSON格式，保存在Elasticsearch中
+* 文档的的每条记录都有一个唯一 ID
+    * 可以用自己指定ID或ES自动生成的
+* JSON文档，格式灵活，不需要预先定义格式
+    * 字段类型可以指定或者通过ES自动推算
+    * 支持数组/支持嵌套
 
-# 创建索引是可以设置分片数和副本数，3个分片，2个副本
-PUT /es_db 
-{
-  "settings" : {
-    "number_of_shards" : 3,
-    "number_of_replicas" : 2
-  }
-}
+    ```
+    # 向es_db索引中插入一条记录(文档)，指定id
+    PUT /es_db/_doc/1
+    {
+      "name": "小红",
+      "sex": 1,
+      "age": 23,
+      "address": "xxxABC52号",
+      "remark": "java developer"
+    }
 
-# 修改索引配置
-PUT /es_db/_settings
-{
-  "index":{
-    "number_of_replicas" : 1
-  }  
-}
-
-# 检查索引是否存在
-HEAD /es_db
-
-# 左打括号「{」必须另起一行
-```
+    # 向es_db索引中插入一条记录(文档)，指定id
+    PUT /es_db/_doc/2
+    {
+      "name": "小蓝",
+      "sex": 0,
+      "age": 24,
+      "address": "xxxABC52号",
+      "remark": "java developer",
+      "other1": "o"
+    }
+    # 查询前10条文档记录
+    GET /es_db/_doc/_search
+    ```
+* 元数据，用于标注文档的相关信息：
+    * _index: 文档记录所属的索引名
+    * _type: 文档记录所属的类型名
+    * _id: 文档记录唯一id
+    * _version: 文档的版本号，修改删除操作version都会自增1
+    * _seq_no: 和version一样，一旦数据发生更改，数据也一直是累计的，shard级别严格递增，保证后写入的Doc的seq_no大于先写入的Doc的seq_no
+    * _primary_term: 用来恢复数据时处理当多个文档的_seq_no一样时的冲突，避免Primary_Shard上的写入被覆盖。每当Primary_Shard发生重新分配时，比如重启，Primary选举等，_primary_term会递增1
+    * _source: 文档的原始json数据
+    ```
+    # 查询es_db中id为2的记录
+    GET /es_db/_doc/2
+        ####### 结果 #######
+        {
+          "_index" : "es_db",
+          "_type" : "_doc",
+          "_id" : "3",
+          "_version" : 2,
+          "_seq_no" : 2,
+          "_primary_term" : 2,
+          "found" : true,
+          "_source" : {
+            "name" : "小粉",
+            "sex" : 0,
+            "age" : 24,
+            "address" : "xxxABC52号",
+            "remark" : "java developer",
+            "other1" : "o"
+          }
+        }
+    ```
+    * 并发场景下修改文档
+        * seq_no和primary_term是对version的优化，7.X版本的ES默认使用这种方式控制版本，所以当在高并发环境下使用乐观锁机制修改文档时，要带上当前文档的seq_no和primary_term进行更新
+            ```
+            # 更新es_db中id为2的文档
+            POST /es_db/_doc/2
+            {
+              "name":"XXX"
+            }
+            
+            # 并发修改某记录，带上_seq_no和_primary_term更新，当两个号对应得上，才能成功更新，解决并发问题
+            POST /es_db/_doc/2?if_seq_no=0&if_primary_term=2
+            {
+                "name":"李四"
+            }
+            ```
+##### 文档操作
+* 添加文档
+    ```
+ 
+    ```
+* 更新文档
+* 删除文档
+* 查询文档
