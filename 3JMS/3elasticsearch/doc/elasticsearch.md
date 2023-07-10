@@ -1,6 +1,6 @@
 # ElasticSearch
 
-## 基础知识
+## 基本概念
 * 什么是ElasticSearch：
     ElasticSearch（简称ES）是一个**分布式**、**Resful风格的** **搜索和数据分析** 引擎，是用Java开发并且是当前最流行的开源的企业级搜索引擎，能够达到近实时搜索，稳定可靠快速安装使用方便
 
@@ -84,7 +84,7 @@ nohup ./bin/elasticsearch >/dev/null &
 浏览器访问`http://vubuntu1:5601/app/dev_tools#/console`
 <img src='./images/1.png'>
 
-### 常用命令
+## 常用命令
     ```
     /_cat/allocation    # 查看单节点shard分配整体情况
     /_cat/shards        # 查看各个shard的详细情况
@@ -124,7 +124,7 @@ nohup ./bin/elasticsearch >/dev/null &
     /_cat/transforms
     /_cat/transforms/{transform_id}
     ```
-### ES安装插件
+## ES安装插件
 以安装分词插件为例：
 * 在线安装，以analysis-icu分词器为例
     ```
@@ -186,15 +186,15 @@ nohup ./bin/elasticsearch >/dev/null &
         mvn package
         # 进入./target/releases
         ```
-### ElasticSearch vs 关系型数据库区别
+## ElasticSearch vs 关系型数据库区别
 * 7.0之前，一个Index可以设置多个Types，7.0开始，一个索引只能创建一个Type-"_doc"
 <table>
 <tr><td><b>关系型数据库</b></td><td>Table(表)</td><td>Row(行)</td><td>Column(列)</td></tr>
 <tr><td><b>ElasticSearch</b></td><td>Index(索引)</td><td>Document(文档)</td><td>Field(字段)</td></tr>
 </table>
 
-### ElasticSearch操作
-#### 索引（Index）
+## ElasticSearch操作
+### 索引（Index）
 * 索引是拥有相似特征的文档的集合，类似表是拥有相似特征的记录的集合
     * 比如说，可以有一个客户数据的索引，有一个产品目录的索引，还可以有一个订单数据的索引
 * 索引命名必须小写，不能以下划线开头
@@ -268,7 +268,7 @@ nohup ./bin/elasticsearch >/dev/null &
     
    
     ```
-#### 文档（Document）
+### 文档（Document）
 * Elasticsearch是面向文档的，文档是所有可搜索数据的最小单位
     * 可以是：日志文件中的日志项/一部电影的具体信息/一张唱片的详细信息/MP3播放器里的一首歌/一篇PDF文档中的具体内容
 * 文档会被序列化成JSON格式，保存在Elasticsearch中
@@ -347,10 +347,31 @@ nohup ./bin/elasticsearch >/dev/null &
                 "name":"李四"
             }
             ```
-##### 文档操作
+#### 文档操作
 * 添加文档
+    * 格式：`[PUT|POST] /[索引名称]/[_doc|_create]/[id]`
     ```
- 
+    # PUT必须指定ID，POST可以不指定ID自动生成ID，根据ID新增或覆盖(删除后添加)原有记录
+    
+    # 向es_db中添加一条记录（文档），id为1，各个字段如
+    PUT /es_db/_doc/1
+    {
+      "name":"小明",
+      "gender":1,
+      "age":24,
+      "address":"地址1",
+      "remark":"java developer"
+    }
+    POST /es_db/_doc
+    {
+      "name":"小明",
+      "gender":1,
+      "age":24,
+      "address":"地址2",
+      "remark":"java developer"
+    }
+    
+    # _create 只能用于创建新纪录
     ```
 * 更新文档
 * 删除文档
