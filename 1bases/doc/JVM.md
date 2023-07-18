@@ -33,7 +33,7 @@ C/C++编写，`本地方法栈`是这些方法运行区域，如`Object.clone()`
             * `1.8`以后`OutOfMemoryError: Matespace（元空间）`[演示](../0JVM/MethodArea)
     * `堆`内存溢出`'OutOfMemoryError: Java heap space'`[演示](../0JVM/src/main/java/com/cl/learn/jvm/head/OutOfMemoryErrorHead.java)
         * 对象太多：产生了太多对象实例，一直引用着，没有被`GC`回收
-        * 对象太大：一个对象之间撑满
+        * 对象太大：一个对象直接撑满
      * `虚拟机栈`内存溢出 `StackOverflowError`：
         * 栈帧过多，方法循环递归调用[演示](../0JVM/src/main/java/com/cl/learn/jvm/stack/StackOverFlowTest2.java)
         * 栈帧过大，局部变量占用内存过大，如两个对象相互引用，并转为json字符串，会造成一个对象的局部变量循环无限大[演示](../0JVM/src/main/java/com/cl/learn/jvm/stack/StackOverFlowTest.java)
