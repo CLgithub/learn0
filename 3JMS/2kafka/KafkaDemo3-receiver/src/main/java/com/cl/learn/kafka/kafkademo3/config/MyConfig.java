@@ -88,6 +88,8 @@ public class MyConfig {
         Map<String, Object> map = kafkaProperties.buildConsumerProperties();
         // 要实现一个主题一个分区一个线程，必须这样配置 参考 https://docs.spring.io/spring-kafka/docs/current/reference/html/#message-listener-container When listening to multiple topics, the default ...
         map.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG, RoundRobinAssignor.class.getName());
+        // 偏移量设置 // earliest从最早的可用消息开始消费 latest从最新的消息开始消费（默认值）
+//        map.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         DefaultKafkaConsumerFactory<Integer, String> dkConsumerFactory = new DefaultKafkaConsumerFactory<>(map);
         ConcurrentMessageListenerContainer concurrentMessageListenerContainer = new ConcurrentMessageListenerContainer(dkConsumerFactory, containerProps);
