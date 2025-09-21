@@ -9,7 +9,7 @@
     * 倒排索引：通过关键字，查找id（有点类似非主键索引）
 * Solr与ES比较：
     * Solr需要zk进行分布式管理，而ES自身带有分布式协同管理功能
-    * Solr支持更多格式数据，入JSON、XML、CSV，ES只支持JSON
+    * Solr支持更多格式数据，如JSON、XML、CSV，ES只支持JSON
     * Solr对已有数据搜索较好，但实时搜索效率明显低于ES
 * 通用数据处理流程：
     <img src='./images/2.png'>

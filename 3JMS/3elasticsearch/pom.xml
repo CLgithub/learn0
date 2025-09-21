@@ -7,6 +7,9 @@
         <groupId>com.cl.learn</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
+    <modules>
+        <module>es1</module>
+    </modules>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>3elasticsearch</artifactId>
@@ -16,7 +19,6 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
-
 
 
 </project>
