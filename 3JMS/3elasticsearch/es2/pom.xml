@@ -9,39 +9,27 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>es1</artifactId>
+    <artifactId>es2</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- Match Elasticsearch 7.x client -->
-        <elasticsearch.version>7.17.22</elasticsearch.version>
-        <!-- Spring Boot version compatible with Java 17 and ES 7.17.x -->
         <spring-boot.version>2.7.18</spring-boot.version>
     </properties>
 
     <dependencies>
-        <!-- Spring Boot Web 基础依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
             <version>${spring-boot.version}</version>
         </dependency>
-
-        <!-- Elasticsearch High Level REST Client (7.x) -->
         <dependency>
-            <groupId>org.elasticsearch.client</groupId>
-            <artifactId>elasticsearch-rest-high-level-client</artifactId>
-            <version>${elasticsearch.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+            <version>${spring-boot.version}</version>
         </dependency>
-
-        <!-- Jackson for JSON mapping (optional but useful) -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-
+        <!-- Optional: for REST endpoints/demo -->
     </dependencies>
 
     <build>

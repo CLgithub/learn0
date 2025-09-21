@@ -9,6 +9,7 @@
     </parent>
     <modules>
         <module>es1</module>
+        <module>es2</module>
     </modules>
     <modelVersion>4.0.0</modelVersion>
 
